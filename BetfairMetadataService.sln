@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.API", "BetfairMetadataService.API\BetfairMetadataService.API.csproj", "{A1CDB25E-8992-40AE-AA55-164A727EFA08}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1CDB25E-8992-40AE-AA55-164A727EFA08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1CDB25E-8992-40AE-AA55-164A727EFA08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1CDB25E-8992-40AE-AA55-164A727EFA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1CDB25E-8992-40AE-AA55-164A727EFA08}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {462C5922-71C1-4870-9C52-B60B20C68201}
+	EndGlobalSection
+EndGlobal
