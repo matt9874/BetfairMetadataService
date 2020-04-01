@@ -1,3 +1,6 @@
+using BetfairMetadataService.API.BetfairApi;
+using BetfairMetadataService.API.ExternalWebInterfaces;
+using BetfairMetadataService.API.Workers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +22,8 @@ namespace BetfairMetadataService.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddHostedService<MetadataFetchWorker>();
+            services.AddSingleton<IAuthenticationClient, AuthenticationClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
