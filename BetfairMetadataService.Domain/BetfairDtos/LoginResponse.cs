@@ -1,4 +1,4 @@
-﻿namespace BetfairMetadataService.API.BetfairApi.Dtos
+﻿namespace BetfairMetadataService.Domain.BetfairDtos
 {
     public class LoginResponse
     {

@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.API", "BetfairMetadataService.API\BetfairMetadataService.API.csproj", "{A1CDB25E-8992-40AE-AA55-164A727EFA08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetfairMetadataService.API", "BetfairMetadataService.API\BetfairMetadataService.API.csproj", "{A1CDB25E-8992-40AE-AA55-164A727EFA08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.Domain", "BetfairMetadataService.Domain\BetfairMetadataService.Domain.csproj", "{0533FE3D-88CA-4930-9BC3-BA00BE0178B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.WebRequests", "BetfairMetadataService.WebRequests\BetfairMetadataService.WebRequests.csproj", "{7918639A-DD75-4E31-8825-F29A039A9A41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.WebRequests.Interfaces", "BetfairMetadataService.WebRequests.Interfaces\BetfairMetadataService.WebRequests.Interfaces.csproj", "{B8128063-2515-46B4-9B08-26521AE400A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{A1CDB25E-8992-40AE-AA55-164A727EFA08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1CDB25E-8992-40AE-AA55-164A727EFA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1CDB25E-8992-40AE-AA55-164A727EFA08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0533FE3D-88CA-4930-9BC3-BA00BE0178B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0533FE3D-88CA-4930-9BC3-BA00BE0178B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0533FE3D-88CA-4930-9BC3-BA00BE0178B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0533FE3D-88CA-4930-9BC3-BA00BE0178B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7918639A-DD75-4E31-8825-F29A039A9A41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7918639A-DD75-4E31-8825-F29A039A9A41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7918639A-DD75-4E31-8825-F29A039A9A41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7918639A-DD75-4E31-8825-F29A039A9A41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8128063-2515-46B4-9B08-26521AE400A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8128063-2515-46B4-9B08-26521AE400A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8128063-2515-46B4-9B08-26521AE400A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8128063-2515-46B4-9B08-26521AE400A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

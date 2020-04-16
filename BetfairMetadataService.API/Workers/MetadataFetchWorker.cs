@@ -1,7 +1,8 @@
-﻿using BetfairMetadataService.API.BetfairApi.Dtos;
-using BetfairMetadataService.API.ExternalWebInterfaces;
+﻿using BetfairMetadataService.Domain.BetfairDtos;
+using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,12 +10,12 @@ namespace BetfairMetadataService.API.Workers
 {
     public class MetadataFetchWorker : IHostedService, IDisposable
     {
-        private static readonly TimeSpan _workerStartTimeSpan = TimeSpan.FromMinutes(5);
-        private readonly IAuthenticationClient _authenticationClient;
+        private static readonly TimeSpan _workerStartTimeSpan = TimeSpan.FromSeconds(5);
+        private readonly IRequestInvoker _requestInvoker;
 
-        public MetadataFetchWorker(IAuthenticationClient authenticationClient)
+        public MetadataFetchWorker(IRequestInvoker requestInvoker)
         {
-            _authenticationClient = authenticationClient;
+            _requestInvoker = requestInvoker;
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -27,7 +28,10 @@ namespace BetfairMetadataService.API.Workers
 
         private Task FetchMetadata()
         {
-            LoginResponse loginResponse = _authenticationClient.Login();
+            var x = _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes", new Dictionary<string, object>()
+            {
+                {"filter", new MarketFilter() }
+            });
             return Task.CompletedTask;
         }
 
