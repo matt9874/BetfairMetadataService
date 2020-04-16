@@ -4,10 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
 {
-    public class AuthenticationClient : IAuthenticationClient
+    public class AuthenticationClientAsync : IAuthenticationClientAsync
     {
         private readonly string _url;
         private readonly string _userName;
@@ -15,21 +16,20 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
 
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public AuthenticationClient(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public AuthenticationClientAsync(IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _url = configuration["BetfairApi:Authentication:Url"];
             _userName = configuration["BetfairApi:Authentication:UserName"];
             _password = configuration["BetfairApi:Authentication:Password"];
             _httpClientFactory = httpClientFactory;
         }
-        public LoginResponse Login()
+        public async Task<LoginResponse> Login()
         {
             HttpClient _httpClient = _httpClientFactory.CreateClient("AuthClient");
-            HttpResponseMessage result = _httpClient.PostAsync(_url, GetLoginBodyAsContent()).Result;
+            HttpResponseMessage result = await _httpClient.PostAsync(_url, GetLoginBodyAsContent());
             result.EnsureSuccessStatusCode();
-            var response = JsonConvert.DeserializeObject<LoginResponse>(result.Content.ReadAsStringAsync().Result);
-
-            return response;
+            string content = await result.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<LoginResponse>(content);
         }
 
         private FormUrlEncodedContent GetLoginBodyAsContent()

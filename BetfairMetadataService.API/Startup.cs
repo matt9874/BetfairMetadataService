@@ -28,8 +28,8 @@ namespace BetfairMetadataService.API
         {
             services.AddControllers();
             services.AddHostedService<MetadataFetchWorker>();
-            services.AddSingleton<IAuthenticationClient, AuthenticationClient>();
-            services.AddSingleton<IRequestInvoker, RequestInvoker>();
+            services.AddSingleton<IAuthenticationClientAsync, AuthenticationClientAsync>();
+            services.AddSingleton<IRequestInvokerAsync, RequestInvokerAsync>();
 
             services.AddHttpClient("AuthClient", client =>
             {

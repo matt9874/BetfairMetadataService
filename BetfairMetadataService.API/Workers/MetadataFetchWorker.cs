@@ -11,9 +11,9 @@ namespace BetfairMetadataService.API.Workers
     public class MetadataFetchWorker : IHostedService, IDisposable
     {
         private static readonly TimeSpan _workerStartTimeSpan = TimeSpan.FromSeconds(5);
-        private readonly IRequestInvoker _requestInvoker;
+        private readonly IRequestInvokerAsync _requestInvoker;
 
-        public MetadataFetchWorker(IRequestInvoker requestInvoker)
+        public MetadataFetchWorker(IRequestInvokerAsync requestInvoker)
         {
             _requestInvoker = requestInvoker;
         }
@@ -26,13 +26,12 @@ namespace BetfairMetadataService.API.Workers
             }
         }
 
-        private Task FetchMetadata()
+        private async Task FetchMetadata()
         {
-            var x = _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes", new Dictionary<string, object>()
+            var x = await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes", new Dictionary<string, object>()
             {
                 {"filter", new MarketFilter() }
             });
-            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

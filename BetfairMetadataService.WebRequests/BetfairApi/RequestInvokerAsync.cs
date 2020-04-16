@@ -6,19 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
 {
-    public class RequestInvoker: IRequestInvoker
+    public class RequestInvokerAsync: IRequestInvokerAsync
     {
         private readonly string _sessionTokenHeader;
         private readonly string _methodPrefix;
         private readonly string _requestContentType;
-        private readonly IAuthenticationClient _authenticationClient;
+        private readonly IAuthenticationClientAsync _authenticationClient;
         private readonly IHttpClientFactory _httpClientFactory;
         private Dictionary<string,string> _customHeaders;
 
-        public RequestInvoker(IAuthenticationClient authenticationClient, IConfiguration configuration,
+        public RequestInvokerAsync(IAuthenticationClientAsync authenticationClient, IConfiguration configuration,
             IHttpClientFactory httpClientFactory)
         {
             _authenticationClient = authenticationClient;
@@ -30,14 +31,14 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             _customHeaders[configuration["BetfairApi:AppKeyHeader"]] = configuration["BetfairApi:AppKey"];
         }
 
-        public T Invoke<T>(string method, IDictionary<string, object> args = null)
+        public async Task<T> Invoke<T>(string method, IDictionary<string, object> args = null)
         {
             if (method == null)
                 throw new ArgumentNullException("method");
             if (method.Length == 0)
                 throw new ArgumentException("method cannot be empty string", "method");
 
-            LoginResponse loginResponse = _authenticationClient.Login();
+            LoginResponse loginResponse = await _authenticationClient.Login();
 
             if (loginResponse.SessionToken == null)
                 throw new Exception("LoginResponse does not contain SessionToken");
@@ -51,9 +52,9 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
                 content.Headers.Add(header.Key, header.Value);
 
             var httpClient = _httpClientFactory.CreateClient("SportsAPING");
-            HttpResponseMessage result = httpClient.PostAsync("", content).Result;
+            HttpResponseMessage result = await httpClient.PostAsync("", content);
             result.EnsureSuccessStatusCode();
-            var response = JsonConvert.DeserializeObject<JsonResponse<T>>(result.Content.ReadAsStringAsync().Result);
+            var response = JsonConvert.DeserializeObject<JsonResponse<T>>(await result.Content.ReadAsStringAsync());
 
             if (response.HasError)
             {

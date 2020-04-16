@@ -1,9 +1,10 @@
 ﻿using BetfairMetadataService.Domain.BetfairDtos;
+using System.Threading.Tasks;
 
 namespace BetfairMetadataService.WebRequests.Interfaces
 {
-    public interface IAuthenticationClient
+    public interface IAuthenticationClientAsync
     {
-        LoginResponse Login();
+        Task<LoginResponse> Login();
     }
 }
