@@ -6,10 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 
 namespace BetfairMetadataService.API
@@ -28,20 +25,8 @@ namespace BetfairMetadataService.API
         {
             services.AddControllers();
             services.AddHostedService<MetadataFetchWorker>();
-            services.AddSingleton<IAuthenticationClientAsync, AuthenticationClientAsync>();
-            services.AddSingleton<IRequestInvokerAsync, RequestInvokerAsync>();
 
-            services.AddHttpClient("AuthClient", client =>
-            {
-                var appKey = Configuration["BetfairApi:AppKey"];
-                var baseUrl = Configuration["BetfairApi:Authentication:BaseUrl"];
-                var appKeyHeader = Configuration["BetfairApi:AppKeyHeader"];
-                var mediaType = Configuration["BetfairApi:Authentication:MediaType"];
-                client.BaseAddress = new Uri(baseUrl);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Add(appKeyHeader, appKey);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType));
-            }).ConfigurePrimaryHttpMessageHandler(h =>
+            services.AddHttpClient<IAuthenticationClientAsync, AuthenticationClientAsync>().ConfigurePrimaryHttpMessageHandler(h =>
             {
                 var handler = new HttpClientHandler();
                 var certificateFilepath = Configuration["BetfairApi:Authentication:CertificateFilepath"];
@@ -50,14 +35,7 @@ namespace BetfairMetadataService.API
                 return handler;
             });
 
-            services.AddHttpClient("SportsAPING", client =>
-            {
-                client.BaseAddress = new Uri(Configuration["BetfairApi:Url"]);
-                var acceptableCharsets = new string[] { "ISO-8859-1", "utf-8" };
-                foreach (var charset in acceptableCharsets)
-                    client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue(charset));
-                ServicePointManager.Expect100Continue = false;
-            });
+            services.AddHttpClient<IRequestInvokerAsync, RequestInvokerAsync>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

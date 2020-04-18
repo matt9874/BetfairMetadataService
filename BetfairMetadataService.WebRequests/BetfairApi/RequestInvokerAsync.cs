@@ -4,7 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,19 +18,26 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         private readonly string _methodPrefix;
         private readonly string _requestContentType;
         private readonly IAuthenticationClientAsync _authenticationClient;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
         private Dictionary<string,string> _customHeaders;
 
         public RequestInvokerAsync(IAuthenticationClientAsync authenticationClient, IConfiguration configuration,
-            IHttpClientFactory httpClientFactory)
+            HttpClient httpClient)
         {
             _authenticationClient = authenticationClient;
-            _httpClientFactory = httpClientFactory;
             _sessionTokenHeader = configuration["BetfairApi:SessionTokenHeader"];
             _methodPrefix = configuration["BetfairApi:MethodPrefix"];
             _requestContentType = configuration["BetfairApi:ContentType"];
             _customHeaders = new Dictionary<string, string>();
             _customHeaders[configuration["BetfairApi:AppKeyHeader"]] = configuration["BetfairApi:AppKey"];
+            httpClient.BaseAddress = new Uri(configuration["BetfairApi:Url"]);
+
+            var acceptableCharsets = new string[] { "ISO-8859-1", "utf-8" };
+            foreach (var charset in acceptableCharsets)
+                httpClient.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue(charset));
+
+            ServicePointManager.Expect100Continue = false;
+            _httpClient = httpClient;
         }
 
         public async Task<T> Invoke<T>(string method, IDictionary<string, object> args = null)
@@ -51,8 +60,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             foreach(var header in _customHeaders)
                 content.Headers.Add(header.Key, header.Value);
 
-            var httpClient = _httpClientFactory.CreateClient("SportsAPING");
-            HttpResponseMessage result = await httpClient.PostAsync("", content);
+            HttpResponseMessage result = await _httpClient.PostAsync("", content);
             result.EnsureSuccessStatusCode();
             var response = JsonConvert.DeserializeObject<JsonResponse<T>>(await result.Content.ReadAsStringAsync());
 

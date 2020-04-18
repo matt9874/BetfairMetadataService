@@ -2,8 +2,10 @@
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
@@ -14,18 +16,25 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         private readonly string _userName;
         private readonly string _password;
 
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
 
-        public AuthenticationClientAsync(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public AuthenticationClientAsync(IConfiguration configuration, HttpClient httpClient)
         {
             _url = configuration["BetfairApi:Authentication:Url"];
             _userName = configuration["BetfairApi:Authentication:UserName"];
-            _password = configuration["BetfairApi:Authentication:Password"];
-            _httpClientFactory = httpClientFactory;
+            _password = configuration["BetfairApi:Authentication:Password"]; 
+            var appKey = configuration["BetfairApi:AppKey"];
+            var baseUrl = configuration["BetfairApi:Authentication:BaseUrl"];
+            var appKeyHeader = configuration["BetfairApi:AppKeyHeader"];
+            var mediaType = configuration["BetfairApi:Authentication:MediaType"];
+            httpClient.BaseAddress = new Uri(baseUrl);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Add(appKeyHeader, appKey);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType));
+            _httpClient = httpClient;
         }
         public async Task<LoginResponse> Login()
         {
-            HttpClient _httpClient = _httpClientFactory.CreateClient("AuthClient");
             HttpResponseMessage result = await _httpClient.PostAsync(_url, GetLoginBodyAsContent());
             result.EnsureSuccessStatusCode();
             string content = await result.Content.ReadAsStringAsync();
