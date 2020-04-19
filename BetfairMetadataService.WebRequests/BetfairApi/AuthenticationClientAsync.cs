@@ -7,22 +7,51 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Polly.Retry;
+using Polly.Timeout;
+using Polly;
+using System.Threading;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
 {
     public class AuthenticationClientAsync : IAuthenticationClientAsync
     {
+        private const string _successfulLoginStatus = "SUCCESS";
         private readonly string _url;
-        private readonly string _userName;
-        private readonly string _password;
-
         private readonly HttpClient _httpClient;
+        private readonly FormUrlEncodedContent _loginBody;
+        private const int _timeOutSeconds = 30;
+        private static readonly IEnumerable<TimeSpan> _retryDelays = new TimeSpan[] 
+        { 
+            TimeSpan.FromSeconds(1), 
+            TimeSpan.FromSeconds(3), 
+            TimeSpan.FromSeconds(9) 
+        };
+
+        private static readonly AsyncTimeoutPolicy _timeoutPolicy = Policy.TimeoutAsync(_timeOutSeconds);
+
+        private static readonly AsyncRetryPolicy<HttpResponseMessage> _asyncGetPolicy =
+            Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+            .Or<TimeoutRejectedException>()
+            .WaitAndRetryAsync(_retryDelays);
+
+        private static readonly AsyncRetryPolicy<LoginResponse> _readStreamPolicy = Policy.HandleResult<LoginResponse>(lr => lr.LoginStatus != _successfulLoginStatus)
+            .Or<TimeoutRejectedException>()
+            .WaitAndRetryAsync(_retryDelays);
 
         public AuthenticationClientAsync(IConfiguration configuration, HttpClient httpClient)
         {
             _url = configuration["BetfairApi:Authentication:Url"];
-            _userName = configuration["BetfairApi:Authentication:UserName"];
-            _password = configuration["BetfairApi:Authentication:Password"]; 
+
+            var userName = configuration["BetfairApi:Authentication:UserName"];
+            var password = configuration["BetfairApi:Authentication:Password"];
+            var postData = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("username", userName),
+                new KeyValuePair<string, string>("password", password)
+            };
+            _loginBody = new FormUrlEncodedContent(postData);
+
             var appKey = configuration["BetfairApi:AppKey"];
             var baseUrl = configuration["BetfairApi:Authentication:BaseUrl"];
             var appKeyHeader = configuration["BetfairApi:AppKeyHeader"];
@@ -35,18 +64,14 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         }
         public async Task<LoginResponse> Login()
         {
-            HttpResponseMessage result = await _httpClient.PostAsync(_url, GetLoginBodyAsContent());
-            result.EnsureSuccessStatusCode();
-            string content = await result.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<LoginResponse>(content);
-        }
-
-        private FormUrlEncodedContent GetLoginBodyAsContent()
-        {
-            var postData = new List<KeyValuePair<string, string>>();
-            postData.Add(new KeyValuePair<string, string>("username", _userName));
-            postData.Add(new KeyValuePair<string, string>("password", _password));
-            return new FormUrlEncodedContent(postData);
+            return await _readStreamPolicy.ExecuteAsync(async () =>
+            {
+                HttpResponseMessage responseMessage = await _asyncGetPolicy.ExecuteAsync(async () =>
+                    await _timeoutPolicy.ExecuteAsync(async token =>
+                        await _httpClient.PostAsync(_url, _loginBody, token), CancellationToken.None));
+                string content = await responseMessage.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<LoginResponse>(content);
+            });
         }
     }
 }

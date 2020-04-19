@@ -2,12 +2,16 @@
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Polly;
+using Polly.Retry;
+using Polly.Timeout;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
@@ -21,6 +25,20 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         private readonly HttpClient _httpClient;
         private Dictionary<string,string> _customHeaders;
 
+        private const int _timeOutSeconds = 30;
+        private static readonly IEnumerable<TimeSpan> _retryDelays = new TimeSpan[]
+        {
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3),
+            TimeSpan.FromSeconds(9)
+        };
+
+        private static readonly AsyncTimeoutPolicy _timeoutPolicy = Policy.TimeoutAsync(_timeOutSeconds);
+
+        private static readonly AsyncRetryPolicy<HttpResponseMessage> _asyncGetPolicy =
+            Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+            .Or<TimeoutRejectedException>()
+            .WaitAndRetryAsync(_retryDelays);
         public RequestInvokerAsync(IAuthenticationClientAsync authenticationClient, IConfiguration configuration,
             HttpClient httpClient)
         {
@@ -60,9 +78,18 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             foreach(var header in _customHeaders)
                 content.Headers.Add(header.Key, header.Value);
 
-            HttpResponseMessage result = await _httpClient.PostAsync("", content);
-            result.EnsureSuccessStatusCode();
-            var response = JsonConvert.DeserializeObject<JsonResponse<T>>(await result.Content.ReadAsStringAsync());
+            AsyncRetryPolicy<JsonResponse<T>> readStreamPolicy = Policy.HandleResult<JsonResponse<T>>(jr => jr.HasError)
+                .Or<TimeoutRejectedException>()
+                .WaitAndRetryAsync(_retryDelays);
+
+            JsonResponse<T> response = await readStreamPolicy.ExecuteAsync(async () =>
+            {
+                HttpResponseMessage responseMessage = await _asyncGetPolicy.ExecuteAsync(async () =>
+                    await _timeoutPolicy.ExecuteAsync(async token =>
+                        await _httpClient.PostAsync("", content, token), CancellationToken.None));
+                string responseContent = await responseMessage.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<JsonResponse<T>>(responseContent);
+            });
 
             if (response.HasError)
             {
@@ -76,9 +103,9 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         private static APINGException ReconstituteException(BetfairApiException ex)
         {
             var data = ex.Data;
-            var exceptionName = data.Property("exceptionname").Value.ToString();
-            var exceptionData = data.Property(exceptionName).Value.ToString();
-            return JsonConvert.DeserializeObject<APINGException>(exceptionData);
+            var exceptionName = data?.Property("exceptionname").Value.ToString();
+            var exceptionData = (data==null||exceptionName==null) ? null : data.Property(exceptionName).Value.ToString();
+            return exceptionData == null ? new APINGException() : JsonConvert.DeserializeObject<APINGException>(exceptionData);
         }
     }
 }
