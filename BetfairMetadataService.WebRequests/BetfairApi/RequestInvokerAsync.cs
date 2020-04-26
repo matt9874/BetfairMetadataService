@@ -3,6 +3,7 @@ using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Polly;
+using Polly.Registry;
 using Polly.Retry;
 using Polly.Timeout;
 using System;
@@ -23,24 +24,18 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         private readonly string _requestContentType;
         private readonly IAuthenticationClientAsync _authenticationClient;
         private readonly HttpClient _httpClient;
+        private readonly IPolicyRegistry<string> _registry;
         private Dictionary<string,string> _customHeaders;
 
-        private const int _timeOutSeconds = 30;
         private static readonly IEnumerable<TimeSpan> _retryDelays = new TimeSpan[]
         {
             TimeSpan.FromSeconds(1),
             TimeSpan.FromSeconds(3),
             TimeSpan.FromSeconds(9)
-        };
-
-        private static readonly AsyncTimeoutPolicy _timeoutPolicy = Policy.TimeoutAsync(_timeOutSeconds);
-
-        private static readonly AsyncRetryPolicy<HttpResponseMessage> _asyncGetPolicy =
-            Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
-            .Or<TimeoutRejectedException>()
-            .WaitAndRetryAsync(_retryDelays);
+        }; 
+        
         public RequestInvokerAsync(IAuthenticationClientAsync authenticationClient, IConfiguration configuration,
-            HttpClient httpClient)
+            HttpClient httpClient, IPolicyRegistry<string> registry)
         {
             _authenticationClient = authenticationClient;
             _sessionTokenHeader = configuration["BetfairApi:SessionTokenHeader"];
@@ -56,6 +51,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
 
             ServicePointManager.Expect100Continue = false;
             _httpClient = httpClient;
+            _registry = registry;
         }
 
         public async Task<T> Invoke<T>(string method, IDictionary<string, object> args = null)
@@ -78,14 +74,16 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             foreach(var header in _customHeaders)
                 content.Headers.Add(header.Key, header.Value);
 
+            var timeoutPolicy = _registry.Get<AsyncTimeoutPolicy>("thirtySecondTimeoutPolicy");
+            var asyncGetPolicy = _registry.Get<AsyncRetryPolicy<HttpResponseMessage>>("thriceTriplingRetryPolicy");
             AsyncRetryPolicy<JsonResponse<T>> readStreamPolicy = Policy.HandleResult<JsonResponse<T>>(jr => jr.HasError)
                 .Or<TimeoutRejectedException>()
                 .WaitAndRetryAsync(_retryDelays);
 
             JsonResponse<T> response = await readStreamPolicy.ExecuteAsync(async () =>
             {
-                HttpResponseMessage responseMessage = await _asyncGetPolicy.ExecuteAsync(async () =>
-                    await _timeoutPolicy.ExecuteAsync(async token =>
+                HttpResponseMessage responseMessage = await asyncGetPolicy.ExecuteAsync(async () =>
+                    await timeoutPolicy.ExecuteAsync(async token =>
                         await _httpClient.PostAsync("", content, token), CancellationToken.None));
                 string responseContent = await responseMessage.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<JsonResponse<T>>(responseContent);

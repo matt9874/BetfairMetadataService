@@ -9,37 +9,21 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Polly.Retry;
 using Polly.Timeout;
-using Polly;
 using System.Threading;
+using Polly.Registry;
+using Polly.Caching;
+using Polly;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
 {
     public class AuthenticationClientAsync : IAuthenticationClientAsync
     {
-        private const string _successfulLoginStatus = "SUCCESS";
         private readonly string _url;
         private readonly HttpClient _httpClient;
+        private readonly IPolicyRegistry<string> _registry;
         private readonly FormUrlEncodedContent _loginBody;
-        private const int _timeOutSeconds = 30;
-        private static readonly IEnumerable<TimeSpan> _retryDelays = new TimeSpan[] 
-        { 
-            TimeSpan.FromSeconds(1), 
-            TimeSpan.FromSeconds(3), 
-            TimeSpan.FromSeconds(9) 
-        };
 
-        private static readonly AsyncTimeoutPolicy _timeoutPolicy = Policy.TimeoutAsync(_timeOutSeconds);
-
-        private static readonly AsyncRetryPolicy<HttpResponseMessage> _asyncGetPolicy =
-            Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
-            .Or<TimeoutRejectedException>()
-            .WaitAndRetryAsync(_retryDelays);
-
-        private static readonly AsyncRetryPolicy<LoginResponse> _readStreamPolicy = Policy.HandleResult<LoginResponse>(lr => lr.LoginStatus != _successfulLoginStatus)
-            .Or<TimeoutRejectedException>()
-            .WaitAndRetryAsync(_retryDelays);
-
-        public AuthenticationClientAsync(IConfiguration configuration, HttpClient httpClient)
+        public AuthenticationClientAsync(IConfiguration configuration, HttpClient httpClient, IPolicyRegistry<string> registry)
         {
             _url = configuration["BetfairApi:Authentication:Url"];
 
@@ -61,17 +45,27 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             httpClient.DefaultRequestHeaders.Add(appKeyHeader, appKey);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType));
             _httpClient = httpClient;
+            _registry = registry;
         }
         public async Task<LoginResponse> Login()
         {
-            return await _readStreamPolicy.ExecuteAsync(async () =>
-            {
-                HttpResponseMessage responseMessage = await _asyncGetPolicy.ExecuteAsync(async () =>
-                    await _timeoutPolicy.ExecuteAsync(async token =>
-                        await _httpClient.PostAsync(_url, _loginBody, token), CancellationToken.None));
-                string content = await responseMessage.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<LoginResponse>(content);
-            });
+            var timeoutPolicy = _registry.Get<AsyncTimeoutPolicy>("thirtySecondTimeoutPolicy");
+            var asyncGetPolicy = _registry.Get<AsyncRetryPolicy<HttpResponseMessage>>("thriceTriplingRetryPolicy");
+            var readStreamPolicy = _registry.Get<AsyncRetryPolicy<LoginResponse>>("loginResponseRetryPolicy");
+            var cachePolicy = _registry.Get<AsyncCachePolicy<LoginResponse>>("oneMinuteLoginCachePolicy");
+            Context policyExecutionContext = new Context($"AuthLogin");
+
+            return await cachePolicy.ExecuteAsync(async context => 
+                await readStreamPolicy.ExecuteAsync(async () =>
+                {
+                    HttpResponseMessage responseMessage = await asyncGetPolicy.ExecuteAsync(async () =>
+                        await timeoutPolicy.ExecuteAsync(async token =>
+                            await _httpClient.PostAsync(_url, _loginBody, token), CancellationToken.None));
+                    string content = await responseMessage.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<LoginResponse>(content);
+                }),
+                policyExecutionContext
+            );
         }
     }
 }

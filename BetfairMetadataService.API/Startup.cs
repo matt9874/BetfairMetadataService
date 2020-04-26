@@ -1,4 +1,4 @@
-using BetfairMetadataService.API.Workers;
+using BetfairMetadataService.WebRequests;
 using BetfairMetadataService.WebRequests.BetfairApi;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Polly.Caching;
+using Polly.Caching.Memory;
+using Polly.Registry;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 
@@ -24,7 +27,10 @@ namespace BetfairMetadataService.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddHostedService<MetadataFetchWorker>();
+
+            services.AddMemoryCache();
+            services.AddSingleton<IAsyncCacheProvider, MemoryCacheProvider>();
+            IPolicyRegistry<string> registry = services.AddPolicyRegistry();
 
             services.AddHttpClient<IAuthenticationClientAsync, AuthenticationClientAsync>().ConfigurePrimaryHttpMessageHandler(h =>
             {
@@ -39,8 +45,11 @@ namespace BetfairMetadataService.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IAsyncCacheProvider cacheProvider,
+            IPolicyRegistry<string> registry)
         {
+            PollyPolicyRegistration.GetPolicyRegistry(cacheProvider, registry);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
