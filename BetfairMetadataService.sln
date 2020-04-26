@@ -5,11 +5,15 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetfairMetadataService.API", "BetfairMetadataService.API\BetfairMetadataService.API.csproj", "{A1CDB25E-8992-40AE-AA55-164A727EFA08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.Domain", "BetfairMetadataService.Domain\BetfairMetadataService.Domain.csproj", "{0533FE3D-88CA-4930-9BC3-BA00BE0178B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetfairMetadataService.Domain", "BetfairMetadataService.Domain\BetfairMetadataService.Domain.csproj", "{0533FE3D-88CA-4930-9BC3-BA00BE0178B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.WebRequests", "BetfairMetadataService.WebRequests\BetfairMetadataService.WebRequests.csproj", "{7918639A-DD75-4E31-8825-F29A039A9A41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetfairMetadataService.WebRequests", "BetfairMetadataService.WebRequests\BetfairMetadataService.WebRequests.csproj", "{7918639A-DD75-4E31-8825-F29A039A9A41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.WebRequests.Interfaces", "BetfairMetadataService.WebRequests.Interfaces\BetfairMetadataService.WebRequests.Interfaces.csproj", "{B8128063-2515-46B4-9B08-26521AE400A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetfairMetadataService.WebRequests.Interfaces", "BetfairMetadataService.WebRequests.Interfaces\BetfairMetadataService.WebRequests.Interfaces.csproj", "{B8128063-2515-46B4-9B08-26521AE400A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{951DE313-0D19-4BF6-853A-42E0983A76A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.WebRequests.Tests", "BetfairMetadataService.WebRequests.Tests\BetfairMetadataService.WebRequests.Tests.csproj", "{46F03ABF-1CC8-4AE5-AA45-E4C4BBB7A2EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +37,16 @@ Global
 		{B8128063-2515-46B4-9B08-26521AE400A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8128063-2515-46B4-9B08-26521AE400A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8128063-2515-46B4-9B08-26521AE400A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46F03ABF-1CC8-4AE5-AA45-E4C4BBB7A2EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46F03ABF-1CC8-4AE5-AA45-E4C4BBB7A2EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46F03ABF-1CC8-4AE5-AA45-E4C4BBB7A2EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46F03ABF-1CC8-4AE5-AA45-E4C4BBB7A2EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{46F03ABF-1CC8-4AE5-AA45-E4C4BBB7A2EE} = {951DE313-0D19-4BF6-853A-42E0983A76A2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {462C5922-71C1-4870-9C52-B60B20C68201}

@@ -7,12 +7,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Polly.Retry;
-using Polly.Timeout;
 using System.Threading;
 using Polly.Registry;
-using Polly.Caching;
 using Polly;
+using System.Web.Http;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
 {
@@ -49,10 +47,10 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         }
         public async Task<LoginResponse> Login()
         {
-            var timeoutPolicy = _registry.Get<AsyncTimeoutPolicy>("thirtySecondTimeoutPolicy");
-            var asyncGetPolicy = _registry.Get<AsyncRetryPolicy<HttpResponseMessage>>("thriceTriplingRetryPolicy");
-            var readStreamPolicy = _registry.Get<AsyncRetryPolicy<LoginResponse>>("loginResponseRetryPolicy");
-            var cachePolicy = _registry.Get<AsyncCachePolicy<LoginResponse>>("oneMinuteLoginCachePolicy");
+            var timeoutPolicy = _registry.Get<IAsyncPolicy>("thirtySecondTimeoutPolicy");
+            var asyncGetPolicy = _registry.Get<IAsyncPolicy<HttpResponseMessage>>("thriceTriplingRetryPolicy");
+            var readStreamPolicy = _registry.Get<IAsyncPolicy<LoginResponse>>("loginResponseRetryPolicy");
+            var cachePolicy = _registry.Get<IAsyncPolicy<LoginResponse>>("oneMinuteLoginCachePolicy");
             Context policyExecutionContext = new Context($"AuthLogin");
 
             return await cachePolicy.ExecuteAsync(async context => 
@@ -61,6 +59,8 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
                     HttpResponseMessage responseMessage = await asyncGetPolicy.ExecuteAsync(async () =>
                         await timeoutPolicy.ExecuteAsync(async token =>
                             await _httpClient.PostAsync(_url, _loginBody, token), CancellationToken.None));
+                    if (!responseMessage.IsSuccessStatusCode)
+                        throw new HttpResponseException(responseMessage);
                     string content = await responseMessage.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<LoginResponse>(content);
                 }),

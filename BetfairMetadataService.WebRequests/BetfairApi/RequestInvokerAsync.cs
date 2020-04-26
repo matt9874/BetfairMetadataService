@@ -4,16 +4,17 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Registry;
-using Polly.Retry;
 using Polly.Timeout;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi
 {
@@ -27,6 +28,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
         private readonly IPolicyRegistry<string> _registry;
         private Dictionary<string,string> _customHeaders;
 
+        private static readonly string[] _acceptableCharsets = new string[] { "ISO-8859-1", "utf-8" };
         private static readonly IEnumerable<TimeSpan> _retryDelays = new TimeSpan[]
         {
             TimeSpan.FromSeconds(1),
@@ -45,8 +47,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             _customHeaders[configuration["BetfairApi:AppKeyHeader"]] = configuration["BetfairApi:AppKey"];
             httpClient.BaseAddress = new Uri(configuration["BetfairApi:Url"]);
 
-            var acceptableCharsets = new string[] { "ISO-8859-1", "utf-8" };
-            foreach (var charset in acceptableCharsets)
+            foreach (var charset in _acceptableCharsets)
                 httpClient.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue(charset));
 
             ServicePointManager.Expect100Continue = false;
@@ -59,12 +60,14 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             if (method == null)
                 throw new ArgumentNullException("method");
             if (method.Length == 0)
-                throw new ArgumentException("method cannot be empty string", "method");
+                throw new ArgumentOutOfRangeException("method cannot be empty string", "method");
 
             LoginResponse loginResponse = await _authenticationClient.Login();
 
-            if (loginResponse.SessionToken == null)
-                throw new Exception("LoginResponse does not contain SessionToken");
+            if (loginResponse == null)
+                throw new AuthenticationException("LoginResponse is null");
+            else if (loginResponse.SessionToken == null)
+                throw new AuthenticationException("LoginResponse does not contain SessionToken");
             else
                 _customHeaders[_sessionTokenHeader] = loginResponse.SessionToken;
 
@@ -74,9 +77,9 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             foreach(var header in _customHeaders)
                 content.Headers.Add(header.Key, header.Value);
 
-            var timeoutPolicy = _registry.Get<AsyncTimeoutPolicy>("thirtySecondTimeoutPolicy");
-            var asyncGetPolicy = _registry.Get<AsyncRetryPolicy<HttpResponseMessage>>("thriceTriplingRetryPolicy");
-            AsyncRetryPolicy<JsonResponse<T>> readStreamPolicy = Policy.HandleResult<JsonResponse<T>>(jr => jr.HasError)
+            var timeoutPolicy = _registry.Get<IAsyncPolicy>("thirtySecondTimeoutPolicy");
+            var asyncGetPolicy = _registry.Get<IAsyncPolicy<HttpResponseMessage>>("thriceTriplingRetryPolicy");
+            IAsyncPolicy<JsonResponse<T>> readStreamPolicy = Policy.HandleResult<JsonResponse<T>>(jr => jr.HasError)
                 .Or<TimeoutRejectedException>()
                 .WaitAndRetryAsync(_retryDelays);
 
@@ -85,6 +88,9 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
                 HttpResponseMessage responseMessage = await asyncGetPolicy.ExecuteAsync(async () =>
                     await timeoutPolicy.ExecuteAsync(async token =>
                         await _httpClient.PostAsync("", content, token), CancellationToken.None));
+
+                if (!responseMessage.IsSuccessStatusCode)
+                    throw new HttpResponseException(responseMessage);
                 string responseContent = await responseMessage.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<JsonResponse<T>>(responseContent);
             });
