@@ -1,14 +1,18 @@
+using AutoMapper;
+using BetfairMetadataService.SqlServer;
 using BetfairMetadataService.WebRequests;
 using BetfairMetadataService.WebRequests.BetfairApi;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Polly.Caching;
 using Polly.Caching.Memory;
 using Polly.Registry;
+using System;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 
@@ -27,7 +31,7 @@ namespace BetfairMetadataService.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddMemoryCache();
             services.AddSingleton<IAsyncCacheProvider, MemoryCacheProvider>();
             IPolicyRegistry<string> registry = services.AddPolicyRegistry();
@@ -42,6 +46,8 @@ namespace BetfairMetadataService.API
             });
 
             services.AddHttpClient<IRequestInvokerAsync, RequestInvokerAsync>();
+            string connectionString = Configuration["ConnectionStrings:BetfairMetadataServiceDb"];
+            services.AddDbContext<BetfairMetadataServiceContext>(o => o.UseSqlServer(connectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -62,6 +62,11 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             if (method.Length == 0)
                 throw new ArgumentOutOfRangeException("method cannot be empty string", "method");
 
+            args = args ?? new Dictionary<string, object>()
+            {
+                {"filter", new MarketFilter() }
+            };
+
             LoginResponse loginResponse = await _authenticationClient.Login();
 
             if (loginResponse == null)
