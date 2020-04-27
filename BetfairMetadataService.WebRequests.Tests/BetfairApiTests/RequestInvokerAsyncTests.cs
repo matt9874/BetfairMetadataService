@@ -1,4 +1,5 @@
-﻿using BetfairMetadataService.Domain.BetfairDtos;
+﻿using BetfairMetadataService.Domain;
+using BetfairMetadataService.Domain.BetfairDtos;
 using BetfairMetadataService.WebRequests.BetfairApi;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -49,18 +50,6 @@ namespace BetfairMetadataService.WebRequests.Tests.BetfairApiTests
         }
 
         [TestMethod]
-        public async Task Invoke_MethodIsNull_ThrowsArgumentNullException()
-        {
-            var mockAuthenticationClient = new Mock<IAuthenticationClientAsync>();
-
-            HttpClient httpClient = new HttpClient(_mockHttpMessageHandler.Object);
-            
-            _requestInvoker = new RequestInvokerAsync(mockAuthenticationClient.Object, _mockConfiguration.Object, httpClient, _mockRegistry);
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(async() => 
-                await _requestInvoker.Invoke<IList<EventTypeResult>>(null));
-        }
-
-        [TestMethod]
         public async Task Invoke_MethodIsEmpty_ThrowsArgumentOutOfRangeException()
         {
             var mockAuthenticationClient = new Mock<IAuthenticationClientAsync>();
@@ -68,7 +57,7 @@ namespace BetfairMetadataService.WebRequests.Tests.BetfairApiTests
 
             _requestInvoker = new RequestInvokerAsync(mockAuthenticationClient.Object, _mockConfiguration.Object, httpClient, _mockRegistry);
             await Assert.ThrowsExceptionAsync<ArgumentOutOfRangeException>(async () =>
-                await _requestInvoker.Invoke<IList<EventTypeResult>>(string.Empty));
+                await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.UnknownMethod));
         }
 
         [TestMethod]
@@ -82,7 +71,7 @@ namespace BetfairMetadataService.WebRequests.Tests.BetfairApiTests
 
             _requestInvoker = new RequestInvokerAsync(mockAuthenticationClient.Object, _mockConfiguration.Object, httpClient, _mockRegistry);
             await Assert.ThrowsExceptionAsync<HttpResponseException>(async () =>
-                await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes"));
+                await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes));
         }
 
         [TestMethod]
@@ -96,7 +85,7 @@ namespace BetfairMetadataService.WebRequests.Tests.BetfairApiTests
 
             _requestInvoker = new RequestInvokerAsync(mockAuthenticationClient.Object, _mockConfiguration.Object, httpClient, _mockRegistry);
             await Assert.ThrowsExceptionAsync<AuthenticationException>(async () =>
-                await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes"));
+                await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes));
         }
 
         [TestMethod]
@@ -110,7 +99,7 @@ namespace BetfairMetadataService.WebRequests.Tests.BetfairApiTests
 
             _requestInvoker = new RequestInvokerAsync(mockAuthenticationClient.Object, _mockConfiguration.Object, httpClient, _mockRegistry);
             await Assert.ThrowsExceptionAsync<AuthenticationException>(async () =>
-                await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes"));
+                await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes));
         }
 
         [TestMethod]
@@ -132,7 +121,7 @@ namespace BetfairMetadataService.WebRequests.Tests.BetfairApiTests
 
             _requestInvoker = new RequestInvokerAsync(mockAuthenticationClient.Object, _mockConfiguration.Object, httpClient, _mockRegistry);
             await Assert.ThrowsExceptionAsync<HttpResponseException>(async () =>
-                await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes"));
+                await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes));
         }
 
         [TestMethod]
@@ -155,7 +144,7 @@ namespace BetfairMetadataService.WebRequests.Tests.BetfairApiTests
             _requestInvoker = new RequestInvokerAsync(mockAuthenticationClient.Object, _mockConfiguration.Object, httpClient, _mockRegistry);
             try
             {
-                await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes");
+                await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes);
             }
             catch (HttpResponseException exception)
             {

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BetfairMetadataService.API.Models.Betfair;
+using BetfairMetadataService.Domain;
 using BetfairMetadataService.Domain.BetfairDtos;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace BetfairMetadataService.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEventTypes()
         { 
-            IList<EventTypeResult> eventTypeResults = await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes");
+            IList<EventTypeResult> eventTypeResults = await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes);
             IList<EventTypeDto> eventTypeDtos = _mapper.Map<IList<EventTypeDto>>(eventTypeResults);
             return Ok(eventTypeDtos);
         }

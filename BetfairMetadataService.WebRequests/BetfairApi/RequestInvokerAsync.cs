@@ -1,4 +1,5 @@
-﻿using BetfairMetadataService.Domain.BetfairDtos;
+﻿using BetfairMetadataService.Domain;
+using BetfairMetadataService.Domain.BetfairDtos;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -55,12 +56,11 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             _registry = registry;
         }
 
-        public async Task<T> Invoke<T>(string method, IDictionary<string, object> args = null)
+        public async Task<T> Invoke<T>(BetfairMethod method, IDictionary<string, object> args = null)
         {
-            if (method == null)
-                throw new ArgumentNullException("method");
-            if (method.Length == 0)
-                throw new ArgumentOutOfRangeException("method cannot be empty string", "method");
+            if (method== BetfairMethod.UnknownMethod)
+                throw new ArgumentOutOfRangeException("Method must be defined", "method");
+            string methodName = BetfairMethodExtensions.GetMethodName(method);
 
             args = args ?? new Dictionary<string, object>()
             {
@@ -76,7 +76,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             else
                 _customHeaders[_sessionTokenHeader] = loginResponse.SessionToken;
 
-            var json = JsonConvert.SerializeObject( new JsonRequest { Method = _methodPrefix + method, Id = 1, Params = args });
+            var json = JsonConvert.SerializeObject( new JsonRequest { Method = _methodPrefix + methodName, Id = 1, Params = args });
             var content = new StringContent(json, Encoding.UTF8, _requestContentType);
             
             foreach(var header in _customHeaders)
