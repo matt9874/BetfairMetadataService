@@ -1,4 +1,7 @@
 using AutoMapper;
+using BetfairMetadataService.DataAccess.Interfaces;
+using BetfairMetadataService.Domain;
+using BetfairMetadataService.Domain.External;
 using BetfairMetadataService.SqlServer;
 using BetfairMetadataService.WebRequests;
 using BetfairMetadataService.WebRequests.BetfairApi;
@@ -44,10 +47,16 @@ namespace BetfairMetadataService.API
                 handler.ClientCertificates.Add(cert);
                 return handler;
             });
-
+            services.Configure<DataProviderMappings>((settings) =>
+            {
+                Configuration.GetSection("DataProviders").Bind(settings);
+            });
             services.AddHttpClient<IRequestInvokerAsync, RequestInvokerAsync>();
             string connectionString = Configuration["ConnectionStrings:BetfairMetadataServiceDb"];
             services.AddDbContext<BetfairMetadataServiceContext>(o => o.UseSqlServer(connectionString));
+
+            services.AddScoped<IBatchReader<DataProvider>, ConfigurationBatchDataProviderReader>();
+            services.AddScoped<IReader<DataProvider, int>, ConfigurationDataProviderReader>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
