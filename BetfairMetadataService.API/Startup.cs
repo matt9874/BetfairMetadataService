@@ -69,6 +69,17 @@ namespace BetfairMetadataService.API
                             return new BetfairEventTypesBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
                     }
                 });
+            services.AddScoped<Func<int, IBatchReader<Competition>>>(sp =>
+                dataProviderId =>
+                {
+                    switch (dataProviderId)
+                    {
+                        case (1):
+                            return new BetfairCompetitionsBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                        default:
+                            return new BetfairCompetitionsBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                    }
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
