@@ -5,6 +5,7 @@ using BetfairMetadataService.Domain.External;
 using BetfairMetadataService.SqlServer;
 using BetfairMetadataService.WebRequests;
 using BetfairMetadataService.WebRequests.BetfairApi;
+using BetfairMetadataService.WebRequests.BetfairApi.Readers;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -57,6 +58,17 @@ namespace BetfairMetadataService.API
 
             services.AddScoped<IBatchReader<DataProvider>, ConfigurationBatchDataProviderReader>();
             services.AddScoped<IReader<DataProvider, int>, ConfigurationDataProviderReader>();
+            services.AddScoped<Func<int, IBatchReader<EventType>>>(sp =>
+                dataProviderId =>
+                {
+                    switch (dataProviderId)
+                    {
+                        case (1):
+                            return new BetfairEventTypesBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                        default:
+                            return new BetfairEventTypesBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                    }
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

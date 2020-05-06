@@ -1,4 +1,4 @@
-﻿namespace BetfairMetadataService.API.Models.Betfair
+﻿namespace BetfairMetadataService.API.Models.External
 {
     public class EventTypeDto
     {

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using BetfairMetadataService.API.Models.Betfair;
 using BetfairMetadataService.Domain.BetfairDtos;
+using BetfairMetadataService.Domain.External;
 
 namespace BetfairMetadataService.API.AutomapperProfiles
 {
@@ -8,9 +8,15 @@ namespace BetfairMetadataService.API.AutomapperProfiles
     {
         public BetfairDtosProfile()
         {
-            CreateMap<EventTypeResult, EventTypeDto>()
+            CreateMap<EventTypeResult, Domain.External.EventType>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(o => o.EventType.Name))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(o => o.EventType.Id));
+            CreateMap<CompetitionResult, Domain.External.Competition>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(o => o.Competition.Name))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(o => o.Competition.Id))
+                .ForMember(dest => dest.Region, opt => opt.MapFrom(o => o.Competition.Region));
+
+            CreateMap<MarketTypeResult, MarketType>();
         }
     }
 }

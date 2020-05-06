@@ -9,6 +9,7 @@ namespace BetfairMetadataService.API.AutomapperProfiles
         public ExternalDtosProfile()
         {
             CreateMap<DataProvider, DataProviderDto>();
+            CreateMap<EventType, EventTypeDto>();
         }
     }
 }
