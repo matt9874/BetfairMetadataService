@@ -21,20 +21,35 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         private Func<int, IMarketTypesService> _marketTypesServiceFactory;
         private Mock<IMarketTypesService> _marketTypesService;
         private ExternalMarketTypesController _controller;
+        private Mock<IReader<DataProvider, int>> _mockDataProviderReader;
+        private Mock<IReader<EventType, string>> _mockEventTypeReader;
+        private Mock<IReader<Competition, string>> _mockCompetitionReader;
 
         [TestInitialize]
         public void TestInit()
         {
+            _mockDataProviderReader = new Mock<IReader<DataProvider, int>>();
+            _mockEventTypeReader = new Mock<IReader<EventType, string>>();
+            _mockCompetitionReader = new Mock<IReader<Competition, string>>();
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(new ExternalDtosProfile()));
             _mockMapper = new Mapper(configuration);
             _marketTypesService = new Mock<IMarketTypesService>();
             _marketTypesServiceFactory = n => _marketTypesService.Object;
-            _controller = new ExternalMarketTypesController(_marketTypesServiceFactory, _mockMapper);
+            _controller = new ExternalMarketTypesController(_mockDataProviderReader.Object, _mockEventTypeReader.Object,
+                _mockCompetitionReader.Object, _marketTypesServiceFactory, _mockMapper);
+        }
+
+        private void SetupNonNullParentObjects()
+        {
+            _mockDataProviderReader.Setup(dpr => dpr.Read(It.IsAny<int>())).Returns(Task.FromResult(new DataProvider()));
+            _mockEventTypeReader.Setup(etr => etr.Read(It.IsAny<string>())).Returns(Task.FromResult(new EventType()));
+            _mockCompetitionReader.Setup(cr => cr.Read(It.IsAny<string>())).Returns(Task.FromResult(new Competition()));
         }
 
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceThrowsArgumentException_ThrowsArgumentException()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ThrowsAsync(new ArgumentException());
 
@@ -44,6 +59,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceReturnsNull_ThrowsException()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync((IEnumerable<MarketType>)null);
 
@@ -53,6 +69,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceReturnsEmpty_ReturnsOk()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[0]);
             var result = await _controller.GetMarketTypesByCompetition(1,"1");
@@ -62,6 +79,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceReturnsEmpty_EmptyIEnumerable()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[0]);
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByCompetition(1, "1");
@@ -71,6 +89,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceReturnsOne_ReturnsOk()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" }
@@ -82,6 +101,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceReturnsOne_IEnumerableOfCountOne()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" }
@@ -93,6 +113,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceReturnsTwo_ReturnsOk()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" },
@@ -105,6 +126,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByCompetitionId_ServiceReturnsOne_IEnumerableOfCountTwo()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" },
@@ -117,6 +139,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceThrowsArgumentException_ThrowsArgumentException()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ThrowsAsync(new ArgumentException());
 
@@ -126,6 +149,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceReturnsNull_ThrowsException()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync((IEnumerable<MarketType>)null);
 
@@ -135,6 +159,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceReturnsEmpty_ReturnsOk()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[0]);
             var result = await _controller.GetMarketTypesByEventType(1, "1");
@@ -144,6 +169,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceReturnsEmpty_EmptyIEnumerable()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[0]);
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByEventType(1, "1");
@@ -153,6 +179,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceReturnsOne_ReturnsOk()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" }
@@ -164,6 +191,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceReturnsOne_IEnumerableOfCountOne()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" }
@@ -175,6 +203,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceReturnsTwo_ReturnsOk()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" },
@@ -187,6 +216,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         [TestMethod]
         public async Task GetMarketTypesByEventTypeId_ServiceReturnsOne_IEnumerableOfCountTwo()
         {
+            SetupNonNullParentObjects();
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[] {
                     new MarketType() {Name="WinDrawLose" },
