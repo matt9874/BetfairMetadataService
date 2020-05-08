@@ -28,10 +28,10 @@ namespace BetfairMetadataService.API.Workers
 
         private async Task FetchMetadata()
         {
-            var x = await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes", new Dictionary<string, object>()
-            {
-                {"filter", new MarketFilter() }
-            });
+            //var x = await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes", new Dictionary<string, object>()
+            //{
+            //    {"filter", new MarketFilter() }
+            //});
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
