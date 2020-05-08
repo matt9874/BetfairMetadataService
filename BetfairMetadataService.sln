@@ -19,8 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetfairMetadataService.SqlS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetfairMetadataService.DataAccess.Interfaces", "BetfairMetadataService.DataAccess.Interfaces\BetfairMetadataService.DataAccess.Interfaces.csproj", "{9043FB11-1302-43B9-B935-B3ED45453491}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.Services", "BetfairMetadataService.Services\BetfairMetadataService.Services.csproj", "{D43663D0-450D-4169-922C-68A0362474BD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetfairMetadataService.API.Tests", "BetfairMetadataService.API.Tests\BetfairMetadataService.API.Tests.csproj", "{142A3B59-135A-4195-A4D3-7ED740BE5E73}"
 EndProject
 Global
@@ -57,10 +55,6 @@ Global
 		{9043FB11-1302-43B9-B935-B3ED45453491}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9043FB11-1302-43B9-B935-B3ED45453491}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9043FB11-1302-43B9-B935-B3ED45453491}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D43663D0-450D-4169-922C-68A0362474BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D43663D0-450D-4169-922C-68A0362474BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D43663D0-450D-4169-922C-68A0362474BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D43663D0-450D-4169-922C-68A0362474BD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{142A3B59-135A-4195-A4D3-7ED740BE5E73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{142A3B59-135A-4195-A4D3-7ED740BE5E73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{142A3B59-135A-4195-A4D3-7ED740BE5E73}.Release|Any CPU.ActiveCfg = Release|Any CPU
