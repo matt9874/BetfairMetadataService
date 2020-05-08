@@ -22,8 +22,7 @@ namespace BetfairMetadataService.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("dataProviders/{dataProviderId}/eventTypes")]
-        [HttpGet("betfairCompetitions")]
+        [HttpGet("dataProviders/{dataProviderId}/competitions")]
         public async Task<IActionResult> GetCompetitions(int dataProviderId)
         {
             IBatchReader<Competition> reader = _batchReaderFactory?.Invoke(dataProviderId);

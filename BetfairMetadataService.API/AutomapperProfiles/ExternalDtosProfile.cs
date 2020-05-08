@@ -11,6 +11,8 @@ namespace BetfairMetadataService.API.AutomapperProfiles
             CreateMap<DataProvider, DataProviderDto>();
             CreateMap<EventType, EventTypeDto>();
             CreateMap<Competition, CompetitionDto>();
+            CreateMap<MarketType, MarketTypeDto>()
+                .ForMember(dest => dest.MarketType, opt => opt.MapFrom(mtr => mtr.Name));
         }
     }
 }

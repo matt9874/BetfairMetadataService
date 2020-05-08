@@ -80,6 +80,18 @@ namespace BetfairMetadataService.API
                             return new BetfairCompetitionsBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
                     }
                 });
+
+            services.AddScoped<Func<int, IMarketTypesService>>(sp =>
+                dataProviderId =>
+                {
+                    switch (dataProviderId)
+                    {
+                        case (1):
+                            return new MarketTypesService(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                        default:
+                            return new MarketTypesService(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                    }
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
