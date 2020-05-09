@@ -101,6 +101,11 @@ namespace BetfairMetadataService.API
             services.AddScoped<ISaver<EventTypeMarketType>, EventTypeMarketTypeFetchRootSaver>();
             services.AddScoped<IReader<EventTypeMarketType, Tuple<int,string,string>>, EventTypeMarketTypeFetchRootReader>();
             services.AddScoped<IBatchReader<EventTypeMarketType>, EventTypeMarketTypeFetchRootBatchReader>();
+
+            services.AddScoped<IDeleter<CompetitionMarketType>, CompetitionMarketTypeFetchRootDeleter>();
+            services.AddScoped<ISaver<CompetitionMarketType>, CompetitionMarketTypeFetchRootSaver>();
+            services.AddScoped<IReader<CompetitionMarketType, Tuple<int, string, string>>, CompetitionMarketTypeFetchRootReader>();
+            services.AddScoped<IBatchReader<CompetitionMarketType>, CompetitionMarketTypeFetchRootBatchReader>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

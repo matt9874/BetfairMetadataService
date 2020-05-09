@@ -10,6 +10,8 @@ namespace BetfairMetadataService.API.AutomapperProfiles
         {
             CreateMap<EventTypeMarketTypeCreationDto, EventTypeMarketType>();
             CreateMap<EventTypeMarketType, EventTypeMarketTypeDto>();
+            CreateMap<CompetitionMarketTypeCreationDto, CompetitionMarketType>();
+            CreateMap<CompetitionMarketType, CompetitionMarketTypeDto>();
         }
     }
 }
