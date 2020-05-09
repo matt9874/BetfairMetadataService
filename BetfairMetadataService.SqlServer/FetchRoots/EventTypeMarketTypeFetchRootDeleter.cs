@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BetfairMetadataService.SqlServer.Readers
+namespace BetfairMetadataService.SqlServer.FetchRoots
 {
     public class EventTypeMarketTypeFetchRootDeleter : IDeleter<EventTypeMarketType>
     {

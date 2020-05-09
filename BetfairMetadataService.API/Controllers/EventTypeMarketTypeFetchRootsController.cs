@@ -18,6 +18,7 @@ namespace BetfairMetadataService.API.Controllers
         private readonly IMapper _mapper;
         private readonly Func<int, IMarketTypesService> _marketTypesServiceFactory;
         private readonly IReader<EventTypeMarketType, Tuple<int,string,string>> _eventTypeMarketTypeReader;
+        private readonly IBatchReader<EventTypeMarketType> _eventTypeMarketTypeBatchReader;
         private readonly ISaver<EventTypeMarketType> _eventTypeMarketTypeSaver;
         private readonly IDeleter<EventTypeMarketType> _eventTypeMarketTypeDeleter;
         private readonly IReader<DataProvider, int> _dataProviderReader;
@@ -25,6 +26,7 @@ namespace BetfairMetadataService.API.Controllers
 
         public EventTypeMarketTypeFetchRootsController(IReader<DataProvider, int> dataProviderReader, 
             IReader<EventType, string> eventTypeReader,
+            IBatchReader<EventTypeMarketType> eventTypeMarketTypeBatchReader,
             Func<int, IMarketTypesService> marketTypesServiceFactory, IMapper mapper, 
             IReader<EventTypeMarketType, Tuple<int, string, string>> eventTypeMarketTypeReader, 
             ISaver<EventTypeMarketType> eventTypeMarketTypeSaver,
@@ -32,6 +34,7 @@ namespace BetfairMetadataService.API.Controllers
         {
             _dataProviderReader = dataProviderReader;
             _eventTypeReader = eventTypeReader;
+            _eventTypeMarketTypeBatchReader = eventTypeMarketTypeBatchReader;
             _mapper = mapper;
             _marketTypesServiceFactory = marketTypesServiceFactory;
             _eventTypeMarketTypeReader = eventTypeMarketTypeReader;
@@ -108,6 +111,37 @@ namespace BetfairMetadataService.API.Controllers
             await _eventTypeMarketTypeDeleter.Delete(eventTypeMarketType);
 
             return NoContent();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEventTypeMarketTypeFetchRoots(int dataProviderId)
+        {
+            DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
+            if (dataProvider == null)
+                return NotFound($"Unable to find dataProvider with id {dataProviderId}");
+
+            IEnumerable<EventTypeMarketType> eventTypeMarketTypes = await _eventTypeMarketTypeBatchReader.Read(etmt => etmt.DataProviderId == dataProviderId);
+
+            if (eventTypeMarketTypes == null)
+                return StatusCode(500);
+
+            return Ok(eventTypeMarketTypes);
+        }
+
+        [HttpGet("{eventTypeId}/marketTypes")]
+        public async Task<IActionResult> GetEventTypeMarketTypeFetchRootsForEventType(int dataProviderId, string eventTypeId)
+        {
+            DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
+            if (dataProvider == null)
+                return NotFound($"Unable to find dataProvider with id {dataProviderId}");
+            
+            IEnumerable<EventTypeMarketType> eventTypeMarketTypes = await _eventTypeMarketTypeBatchReader.Read(etmt => 
+                etmt.DataProviderId == dataProviderId && etmt.EventTypeId == eventTypeId);
+
+            if (eventTypeMarketTypes == null)
+                return StatusCode(500);
+
+            return Ok(eventTypeMarketTypes);
         }
 
     }

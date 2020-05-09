@@ -3,7 +3,7 @@ using BetfairMetadataService.Domain.FetchRoots;
 using System;
 using System.Threading.Tasks;
 
-namespace BetfairMetadataService.SqlServer.Readers
+namespace BetfairMetadataService.SqlServer.FetchRoots
 {
     public class EventTypeMarketTypeFetchRootReader : IReader<EventTypeMarketType, Tuple<int, string, string>>
     {

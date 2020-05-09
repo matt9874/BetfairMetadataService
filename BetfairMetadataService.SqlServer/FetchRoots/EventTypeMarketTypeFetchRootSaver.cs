@@ -2,7 +2,7 @@
 using BetfairMetadataService.Domain.FetchRoots;
 using System.Threading.Tasks;
 
-namespace BetfairMetadataService.SqlServer.Readers
+namespace BetfairMetadataService.SqlServer.FetchRoots
 {
     public class EventTypeMarketTypeFetchRootSaver : ISaver<EventTypeMarketType>
     {
