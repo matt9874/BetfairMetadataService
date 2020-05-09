@@ -2,7 +2,9 @@ using AutoMapper;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain;
 using BetfairMetadataService.Domain.External;
+using BetfairMetadataService.Domain.FetchRoots;
 using BetfairMetadataService.SqlServer;
+using BetfairMetadataService.SqlServer.Readers;
 using BetfairMetadataService.WebRequests;
 using BetfairMetadataService.WebRequests.BetfairApi;
 using BetfairMetadataService.WebRequests.BetfairApi.Readers;
@@ -94,6 +96,10 @@ namespace BetfairMetadataService.API
                             return new MarketTypesService(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
                     }
                 });
+
+            services.AddScoped<IDeleter<EventTypeMarketType>, EventTypeMarketTypeFetchRootDeleter>();
+            services.AddScoped<ISaver<EventTypeMarketType>, EventTypeMarketTypeFetchRootSaver>();
+            services.AddScoped<IReader<EventTypeMarketType, Tuple<int,string,string>>, EventTypeMarketTypeFetchRootReader>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

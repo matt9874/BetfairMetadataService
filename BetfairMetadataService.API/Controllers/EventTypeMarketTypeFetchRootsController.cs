@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
-using BetfairMetadataService.API.Models.External;
 using BetfairMetadataService.API.Models.FetchRoots;
 using BetfairMetadataService.DataAccess.Interfaces;
-using BetfairMetadataService.Domain;
-using BetfairMetadataService.Domain.BetfairDtos;
+using BetfairMetadataService.Domain.External;
 using BetfairMetadataService.Domain.FetchRoots;
-using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -14,49 +11,59 @@ using System.Threading.Tasks;
 
 namespace BetfairMetadataService.API.Controllers
 {
-    [Route("api/eventTypeMarketTypeFetchRoots")]
+    [Route("api/dataProviders/{dataProviderId}/eventTypeFetchRoots/")]
     [ApiController]
     public class EventTypeMarketTypeFetchRootsController : ControllerBase
     {
-        private readonly IRequestInvokerAsync _requestInvoker;
         private readonly IMapper _mapper;
-        private readonly IReader<EventTypeMarketType, Tuple<string, string>> _eventTypeMarketTypeReader;
+        private readonly Func<int, IMarketTypesService> _marketTypesServiceFactory;
+        private readonly IReader<EventTypeMarketType, Tuple<int,string,string>> _eventTypeMarketTypeReader;
         private readonly ISaver<EventTypeMarketType> _eventTypeMarketTypeSaver;
+        private readonly IDeleter<EventTypeMarketType> _eventTypeMarketTypeDeleter;
+        private readonly IReader<DataProvider, int> _dataProviderReader;
+        private readonly IReader<EventType, string> _eventTypeReader;
 
-        public EventTypeMarketTypeFetchRootsController(IRequestInvokerAsync requestInvoker, IMapper mapper,
-            IReader<EventTypeMarketType, Tuple<string, string>> eventTypeMarketTypeReader,
-            ISaver<EventTypeMarketType> eventTypeMarketTypeSaver)
+        public EventTypeMarketTypeFetchRootsController(IReader<DataProvider, int> dataProviderReader, 
+            IReader<EventType, string> eventTypeReader,
+            Func<int, IMarketTypesService> marketTypesServiceFactory, IMapper mapper, 
+            IReader<EventTypeMarketType, Tuple<int, string, string>> eventTypeMarketTypeReader, 
+            ISaver<EventTypeMarketType> eventTypeMarketTypeSaver,
+            IDeleter<EventTypeMarketType> eventTypeMarketTypeDeleter)
         {
-            _requestInvoker = requestInvoker;
+            _dataProviderReader = dataProviderReader;
+            _eventTypeReader = eventTypeReader;
             _mapper = mapper;
+            _marketTypesServiceFactory = marketTypesServiceFactory;
             _eventTypeMarketTypeReader = eventTypeMarketTypeReader;
             _eventTypeMarketTypeSaver = eventTypeMarketTypeSaver;
+            _eventTypeMarketTypeDeleter = eventTypeMarketTypeDeleter;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateEventTypeMarketTypeFetchRoot(EventTypeMarketTypeCreationDto eventTypeMarketType)
+        [HttpPost("{eventTypeId}/marketTypes/")]
+        public async Task<IActionResult> CreateEventTypeMarketTypeFetchRoot([FromRoute]int dataProviderId, [FromRoute]string eventTypeId,
+            [FromBody]EventTypeMarketTypeCreationDto eventTypeMarketType)
         {
-            MarketFilter marketFilter = new MarketFilter()
-            {
-                EventTypeIds = new HashSet<string>() { eventTypeMarketType.EventTypeId }
-            };
+            DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
+            if (dataProvider == null)
+                return NotFound($"Unable to find dataProvider with id {dataProviderId}");
 
-            IList<MarketTypeResult> marketTypeResults = await _requestInvoker.Invoke<IList<MarketTypeResult>>(
-                BetfairMethod.ListMarketTypes,
-                new Dictionary<string, object>()
-                {
-                    { "filter", marketFilter }
-                });
+            EventType eventType = await _eventTypeReader.Read(eventTypeId);
+            if (eventType == null)
+                return NotFound($"Unable to find eventType with id {eventTypeId}");
 
-            if (!marketTypeResults.Any(mtr => mtr.MarketType == eventTypeMarketType.MarketType))
-                return Conflict($"There are no markets with type {eventTypeMarketType.MarketType} in the eventType with id {eventTypeMarketType.EventTypeId} in the Betfair system");
+            IMarketTypesService marketTypesService = _marketTypesServiceFactory?.Invoke(dataProviderId);
+            IEnumerable<MarketType> marketTypes = await marketTypesService.GetMarketTypesByEventTypeId(eventTypeId);
 
-            if (_eventTypeMarketTypeReader.Read(Tuple.Create(eventTypeMarketType.EventTypeId, eventTypeMarketType.MarketType)) != null)
-                return Conflict($"The fetch root object with eventTypeId {eventTypeMarketType.EventTypeId} and marketType {eventTypeMarketType.MarketType} has already been saved.");
+            if (!marketTypes.Any(mtr => mtr.Name == eventTypeMarketType.MarketType))
+                return NotFound($"There are no markets with type {eventTypeMarketType.MarketType} in the eventType with id {eventTypeId} in the Betfair system");
+
+            if (await _eventTypeMarketTypeReader.Read(Tuple.Create(dataProviderId, eventTypeId, eventTypeMarketType.MarketType)) != null)
+                return Conflict($"The fetch root object with eventTypeId {eventTypeId} and marketType {eventTypeMarketType.MarketType} has already been saved.");
 
             var fetchRoot = new EventTypeMarketType()
             {
-                EventTypeId = eventTypeMarketType.EventTypeId,
+                DataProviderId = dataProviderId,
+                EventTypeId = eventTypeId,
                 MarketType = eventTypeMarketType.MarketType
             };
             await _eventTypeMarketTypeSaver.Save(fetchRoot);
@@ -67,30 +74,41 @@ namespace BetfairMetadataService.API.Controllers
                 "GetEventTypeMarketTypeFetchRoot",
                 new
                 {
-                    eventTypeId = eventTypeMarketType.EventTypeId,
+                    dataProviderId = dataProviderId,
+                    eventTypeId = eventTypeId,
                     marketType = eventTypeMarketType.MarketType
                 },
                 fetchRootDto);
         }
 
-        [HttpGet("eventTypes/{eventTypeId}/marketTypes/{marketType}", Name = "GetEventTypeMarketTypeFetchRoot")]
-        public async Task<IActionResult> GetEventTypeMarketTypeFetchRoot(string eventTypeId, string marketType)
+        [HttpGet("{eventTypeId}/marketTypes/{marketType}", Name = "GetEventTypeMarketTypeFetchRoot")]
+        public async Task<IActionResult> GetEventTypeMarketTypeFetchRoot(int dataProviderId, string eventTypeId, string marketType)
         {
-            MarketFilter marketFilter = new MarketFilter()
-            {
-                EventTypeIds = new HashSet<string>() { eventTypeId }
+            EventTypeMarketType eventTypeMarketType = await _eventTypeMarketTypeReader.Read(Tuple.Create(dataProviderId, eventTypeId, marketType));
+
+            if (eventTypeMarketType == null)
+                return NotFound($"Unable to find fetch root with dataProviderId of {dataProviderId}, eventTypeId of {eventTypeId} and marketType of {marketType}");
+
+            return Ok(eventTypeMarketType);
+        }
+
+        [HttpDelete("{eventTypeId}/marketTypes/{marketType}")]
+        public async Task<IActionResult> DeleteEventTypeMarketTypeFetchRoot(int dataProviderId, string eventTypeId, string marketType)
+        {
+            if(await _eventTypeMarketTypeReader.Read(Tuple.Create(dataProviderId, eventTypeId, marketType)) == null)
+                return NotFound($"The fetch root object with dataProviderId {dataProviderId}, eventTypeId {eventTypeId} and marketType {marketType} cannot be found.");
+
+            var eventTypeMarketType = new EventTypeMarketType()
+            { 
+                DataProviderId = dataProviderId,
+                EventTypeId = eventTypeId,
+                MarketType = marketType
             };
 
-            IList<MarketTypeResult> marketTypeResults = await _requestInvoker.Invoke<IList<MarketTypeResult>>(
-                BetfairMethod.ListMarketTypes,
-                new Dictionary<string, object>()
-                {
-                    { "filter", marketFilter }
-                });
+            await _eventTypeMarketTypeDeleter.Delete(eventTypeMarketType);
 
-            MarketTypeResult marketTypeResult = marketTypeResults.FirstOrDefault(mtr => mtr.MarketType == marketType);
-            MarketTypeDto marketTypeDto = _mapper.Map<MarketTypeDto>(marketTypeResult);
-            return Ok(marketTypeDto);
+            return NoContent();
         }
+
     }
 }
