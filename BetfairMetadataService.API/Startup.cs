@@ -11,6 +11,7 @@ using BetfairMetadataService.WebRequests.BetfairApi.Readers;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,11 @@ namespace BetfairMetadataService.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers(setupAction=>
+            {
+                setupAction.ReturnHttpNotAcceptable = true;
+            }).AddXmlDataContractSerializerFormatters();
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddMemoryCache();
             services.AddSingleton<IAsyncCacheProvider, MemoryCacheProvider>();
