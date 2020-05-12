@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using BetfairMetadataService.API.Filters;
 using BetfairMetadataService.API.Models.FetchRoots;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.External;
@@ -15,7 +15,6 @@ namespace BetfairMetadataService.API.Controllers
     [ApiController]
     public class CompetitionMarketTypeFetchRootsController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly Func<int, IMarketTypesService> _marketTypesServiceFactory;
         private readonly IReader<CompetitionMarketType, Tuple<int, string, string>> _competitionMarketTypeReader;
         private readonly IBatchReader<CompetitionMarketType> _competitionMarketTypeBatchReader;
@@ -27,7 +26,7 @@ namespace BetfairMetadataService.API.Controllers
         public CompetitionMarketTypeFetchRootsController(IReader<DataProvider, int> dataProviderReader,
             IReader<Competition, string> competitionReader,
             IBatchReader<CompetitionMarketType> competitionMarketTypeBatchReader,
-            Func<int, IMarketTypesService> marketTypesServiceFactory, IMapper mapper,
+            Func<int, IMarketTypesService> marketTypesServiceFactory,
             IReader<CompetitionMarketType, Tuple<int, string, string>> competitionMarketTypeReader,
             ISaver<CompetitionMarketType> competitionMarketTypeSaver,
             IDeleter<CompetitionMarketType> competitionMarketTypeDeleter)
@@ -35,7 +34,6 @@ namespace BetfairMetadataService.API.Controllers
             _dataProviderReader = dataProviderReader;
             _competitionReader = competitionReader;
             _competitionMarketTypeBatchReader = competitionMarketTypeBatchReader;
-            _mapper = mapper;
             _marketTypesServiceFactory = marketTypesServiceFactory;
             _competitionMarketTypeReader = competitionMarketTypeReader;
             _competitionMarketTypeSaver = competitionMarketTypeSaver;
@@ -43,6 +41,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpPost("{competitionId}/marketTypes/")]
+        [CompetitionMarketTypeResultFilter]
         public async Task<IActionResult> CreateCompetitionMarketTypeFetchRoot([FromRoute]int dataProviderId, [FromRoute]string competitionId,
             [FromBody]CompetitionMarketTypeCreationDto competitionMarketType)
         {
@@ -71,8 +70,6 @@ namespace BetfairMetadataService.API.Controllers
             };
             await _competitionMarketTypeSaver.Save(fetchRoot);
 
-            CompetitionMarketTypeDto fetchRootDto = _mapper.Map<CompetitionMarketTypeDto>(fetchRoot);
-
             return CreatedAtRoute(
                 "GetCompetitionMarketTypeFetchRoot",
                 new
@@ -81,10 +78,11 @@ namespace BetfairMetadataService.API.Controllers
                     competitionId = competitionId,
                     marketType = competitionMarketType.MarketType
                 },
-                fetchRootDto);
+                fetchRoot);
         }
 
         [HttpGet("{competitionId}/marketTypes/{marketType}", Name = "GetCompetitionMarketTypeFetchRoot")]
+        [CompetitionMarketTypeResultFilter]
         public async Task<IActionResult> GetCompetitionMarketTypeFetchRoot(int dataProviderId, string competitionId, string marketType)
         {
             CompetitionMarketType competitionMarketType = await _competitionMarketTypeReader.Read(Tuple.Create(dataProviderId, competitionId, marketType));
@@ -114,6 +112,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet]
+        [CompetitionMarketTypesResultFilter]
         public async Task<IActionResult> GetCompetitionMarketTypeFetchRoots(int dataProviderId)
         {
             DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
@@ -129,6 +128,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("{competitionId}/marketTypes")]
+        [CompetitionMarketTypesResultFilter]
         public async Task<IActionResult> GetCompetitionMarketTypeFetchRootsForCompetition(int dataProviderId, string competitionId)
         {
             DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);

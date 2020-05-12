@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using BetfairMetadataService.API.Filters;
 using BetfairMetadataService.API.Models.FetchRoots;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.External;
@@ -15,7 +15,6 @@ namespace BetfairMetadataService.API.Controllers
     [ApiController]
     public class EventTypeMarketTypeFetchRootsController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly Func<int, IMarketTypesService> _marketTypesServiceFactory;
         private readonly IReader<EventTypeMarketType, Tuple<int,string,string>> _eventTypeMarketTypeReader;
         private readonly IBatchReader<EventTypeMarketType> _eventTypeMarketTypeBatchReader;
@@ -27,7 +26,7 @@ namespace BetfairMetadataService.API.Controllers
         public EventTypeMarketTypeFetchRootsController(IReader<DataProvider, int> dataProviderReader, 
             IReader<EventType, string> eventTypeReader,
             IBatchReader<EventTypeMarketType> eventTypeMarketTypeBatchReader,
-            Func<int, IMarketTypesService> marketTypesServiceFactory, IMapper mapper, 
+            Func<int, IMarketTypesService> marketTypesServiceFactory,
             IReader<EventTypeMarketType, Tuple<int, string, string>> eventTypeMarketTypeReader, 
             ISaver<EventTypeMarketType> eventTypeMarketTypeSaver,
             IDeleter<EventTypeMarketType> eventTypeMarketTypeDeleter)
@@ -35,7 +34,6 @@ namespace BetfairMetadataService.API.Controllers
             _dataProviderReader = dataProviderReader;
             _eventTypeReader = eventTypeReader;
             _eventTypeMarketTypeBatchReader = eventTypeMarketTypeBatchReader;
-            _mapper = mapper;
             _marketTypesServiceFactory = marketTypesServiceFactory;
             _eventTypeMarketTypeReader = eventTypeMarketTypeReader;
             _eventTypeMarketTypeSaver = eventTypeMarketTypeSaver;
@@ -43,6 +41,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpPost("{eventTypeId}/marketTypes/")]
+        [EventTypeMarketTypeResultFilter]
         public async Task<IActionResult> CreateEventTypeMarketTypeFetchRoot([FromRoute]int dataProviderId, [FromRoute]string eventTypeId,
             [FromBody]EventTypeMarketTypeCreationDto eventTypeMarketType)
         {
@@ -71,8 +70,6 @@ namespace BetfairMetadataService.API.Controllers
             };
             await _eventTypeMarketTypeSaver.Save(fetchRoot);
 
-            EventTypeMarketTypeDto fetchRootDto = _mapper.Map<EventTypeMarketTypeDto>(fetchRoot);
-
             return CreatedAtRoute(
                 "GetEventTypeMarketTypeFetchRoot",
                 new
@@ -81,10 +78,11 @@ namespace BetfairMetadataService.API.Controllers
                     eventTypeId = eventTypeId,
                     marketType = eventTypeMarketType.MarketType
                 },
-                fetchRootDto);
+                fetchRoot);
         }
 
         [HttpGet("{eventTypeId}/marketTypes/{marketType}", Name = "GetEventTypeMarketTypeFetchRoot")]
+        [EventTypeMarketTypeResultFilter]
         public async Task<IActionResult> GetEventTypeMarketTypeFetchRoot(int dataProviderId, string eventTypeId, string marketType)
         {
             EventTypeMarketType eventTypeMarketType = await _eventTypeMarketTypeReader.Read(Tuple.Create(dataProviderId, eventTypeId, marketType));
@@ -114,6 +112,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet]
+        [EventTypeMarketTypesResultFilter]
         public async Task<IActionResult> GetEventTypeMarketTypeFetchRoots(int dataProviderId)
         {
             DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
@@ -129,6 +128,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("{eventTypeId}/marketTypes")]
+        [EventTypeMarketTypesResultFilter]
         public async Task<IActionResult> GetEventTypeMarketTypeFetchRootsForEventType(int dataProviderId, string eventTypeId)
         {
             DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
@@ -143,6 +143,5 @@ namespace BetfairMetadataService.API.Controllers
 
             return Ok(eventTypeMarketTypes);
         }
-
     }
 }
