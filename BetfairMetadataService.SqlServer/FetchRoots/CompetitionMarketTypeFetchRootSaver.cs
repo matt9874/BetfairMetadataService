@@ -15,7 +15,7 @@ namespace BetfairMetadataService.SqlServer.FetchRoots
 
         public async Task Save(CompetitionMarketType entity)
         {
-            await _context.CompetitionMarketTypeFetchRoots.AddAsync(entity);
+            _context.CompetitionMarketTypeFetchRoots.Add(entity);
             await _context.SaveChangesAsync();
         }
     }
