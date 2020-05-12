@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using BetfairMetadataService.API.Models.External;
+﻿using BetfairMetadataService.API.Filters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.External;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +13,14 @@ namespace BetfairMetadataService.API.Controllers
     public class ExternalEventTypesController: ControllerBase
     {
         private readonly Func<int, IBatchReader<EventType>> _batchReaderFactory;
-        private readonly IMapper _mapper;
 
-        public ExternalEventTypesController(Func<int, IBatchReader<EventType>> batchReaderFactory, IMapper mapper)
+        public ExternalEventTypesController(Func<int, IBatchReader<EventType>> batchReaderFactory)
         {
             _batchReaderFactory = batchReaderFactory;
-            _mapper = mapper;
         }
 
         [HttpGet("dataProviders/{dataProviderId}/eventTypes")]
+        [ExternalEventTypesResultFilter]
         public async Task<IActionResult> GetEventTypes(int dataProviderId)
         {
             IBatchReader<EventType> reader = _batchReaderFactory?.Invoke(dataProviderId);
@@ -30,8 +28,7 @@ namespace BetfairMetadataService.API.Controllers
             if (eventTypes == null)
                 throw new Exception("IBatchReader<EventType> returned null IEnumerable");
 
-            IEnumerable<EventTypeDto> eventTypeDtos = _mapper.Map<IList<EventTypeDto>>(eventTypes);
-            return Ok(eventTypeDtos);
+            return Ok(eventTypes);
         }
     }
 }

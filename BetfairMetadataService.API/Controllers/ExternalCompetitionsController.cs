@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using BetfairMetadataService.API.Models.External;
+﻿using BetfairMetadataService.API.Filters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.External;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +13,14 @@ namespace BetfairMetadataService.API.Controllers
     public class ExternalCompetitionsController : ControllerBase
     {
         private readonly Func<int, IBatchReader<Competition>> _batchReaderFactory;
-        private readonly IMapper _mapper;
 
-        public ExternalCompetitionsController(Func<int, IBatchReader<Competition>> batchReaderFactory, IMapper mapper)
+        public ExternalCompetitionsController(Func<int, IBatchReader<Competition>> batchReaderFactory)
         {
             _batchReaderFactory = batchReaderFactory;
-            _mapper = mapper;
         }
 
         [HttpGet("dataProviders/{dataProviderId}/competitions")]
+        [ExternalCompetitionsResultFilterAttribute]
         public async Task<IActionResult> GetCompetitions(int dataProviderId)
         {
             IBatchReader<Competition> reader = _batchReaderFactory?.Invoke(dataProviderId);
@@ -30,8 +28,7 @@ namespace BetfairMetadataService.API.Controllers
             if (competitions == null)
                 throw new Exception("IBatchReader<Competition> returned null IEnumerable");
 
-            IEnumerable<CompetitionDto> competitionDtos = _mapper.Map<IList<CompetitionDto>>(competitions);
-            return Ok(competitionDtos);
+            return Ok(competitions);
         }
     }
 }

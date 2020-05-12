@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using BetfairMetadataService.API.Models.External;
+﻿using BetfairMetadataService.API.Filters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.External;
 using Microsoft.AspNetCore.Mvc;
@@ -17,19 +16,18 @@ namespace BetfairMetadataService.API.Controllers
         private readonly IReader<EventType, string> _eventTypeReader;
         private readonly IReader<Competition, string> _competitionReader;
         private readonly Func<int, IMarketTypesService> _marketTypesServiceFactory;
-        private readonly IMapper _mapper;
 
         public ExternalMarketTypesController(IReader<DataProvider, int> dataProviderReader, IReader<EventType, string> eventTypeReader,
-            IReader<Competition, string> competitionReader, Func<int, IMarketTypesService> marketTypesServiceFactory, IMapper mapper)
+            IReader<Competition, string> competitionReader, Func<int, IMarketTypesService> marketTypesServiceFactory)
         {
             _dataProviderReader = dataProviderReader;
             _eventTypeReader = eventTypeReader;
             _competitionReader = competitionReader;
             _marketTypesServiceFactory = marketTypesServiceFactory;
-            _mapper = mapper;
         }
 
         [HttpGet("dataProviders/{dataProviderId}/competitions/{competitionId}/marketTypes")]
+        [ExternalMarketTypesResultFilterAttribute]
         public async Task<IActionResult> GetMarketTypesByCompetition(int dataProviderId, string competitionId)
         {
             DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
@@ -46,11 +44,11 @@ namespace BetfairMetadataService.API.Controllers
             if (marketTypes == null)
                 throw new Exception($"IMarketTypesService.GetMarketTypesByCompetitionId({competitionId}) returned null IEnumerable<MarketType>");
 
-            IList<MarketTypeDto> marketTypeDtos = _mapper.Map<IList<MarketTypeDto>>(marketTypes);
-            return Ok(marketTypeDtos);
+            return Ok(marketTypes);
         }
 
         [HttpGet("dataProviders/{dataProviderId}/eventTypes/{eventTypeId}/marketTypes")]
+        [ExternalMarketTypesResultFilterAttribute]
         public async Task<IActionResult> GetMarketTypesByEventType(int dataProviderId, string eventTypeId)
         {
             DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
@@ -67,8 +65,7 @@ namespace BetfairMetadataService.API.Controllers
             if (marketTypes == null)
                 throw new Exception($"IMarketTypesService.GetMarketTypesByEventTypeId({eventTypeId}) returned null IEnumerable<MarketType>");
 
-            IList<MarketTypeDto> marketTypeDtos = _mapper.Map<IList<MarketTypeDto>>(marketTypes);
-            return Ok(marketTypeDtos);
+            return Ok(marketTypes);
         }
     }
 }
