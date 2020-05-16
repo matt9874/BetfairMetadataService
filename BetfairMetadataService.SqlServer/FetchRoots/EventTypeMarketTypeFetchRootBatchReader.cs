@@ -19,8 +19,7 @@ namespace BetfairMetadataService.SqlServer.FetchRoots
 
         public async Task<IEnumerable<EventTypeMarketType>> Read(Func<EventTypeMarketType,bool> filter)
         {
-            return (await _context.EventTypeMarketTypeFetchRoots.ToListAsync())
-                .Where(filter);
+            return await _context.EventTypeMarketTypeFetchRoots.AsAsyncEnumerable().Where(filter).ToListAsync();
         }
     }
 }

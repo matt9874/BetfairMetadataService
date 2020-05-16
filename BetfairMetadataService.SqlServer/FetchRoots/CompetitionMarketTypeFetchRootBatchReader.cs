@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+//using System.Linq.Async;
 using System.Threading.Tasks;
 
 namespace BetfairMetadataService.SqlServer.FetchRoots
@@ -19,8 +20,7 @@ namespace BetfairMetadataService.SqlServer.FetchRoots
 
         public async Task<IEnumerable<CompetitionMarketType>> Read(Func<CompetitionMarketType, bool> filter)
         {
-            return (await _context.CompetitionMarketTypeFetchRoots.ToListAsync())
-                .Where(filter);
+            return await _context.CompetitionMarketTypeFetchRoots.AsAsyncEnumerable().Where(filter).ToListAsync();
         }
     }
 }
