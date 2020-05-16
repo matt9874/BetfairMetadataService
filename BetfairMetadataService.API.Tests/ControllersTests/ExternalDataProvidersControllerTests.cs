@@ -17,7 +17,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
     [TestClass]
     public class ExternalDataProvidersControllerTests
     {
-        private IMapper _mockMapper;
         private Mock<IReader<DataProvider, int>> _mockDataProviderReader;
         private Mock<IBatchReader<DataProvider>> _mockBatchDataProviderReader;
         private ExternalDataProvidersController _controller;
@@ -26,10 +25,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         public void TestInit()
         {
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(new ExternalDtosProfile()));
-            _mockMapper = new Mapper(configuration);
             _mockDataProviderReader = new Mock<IReader<DataProvider, int>>();
             _mockBatchDataProviderReader = new Mock<IBatchReader<DataProvider>>();
-            _controller = new ExternalDataProvidersController(_mockMapper, _mockDataProviderReader.Object, _mockBatchDataProviderReader.Object);
+            _controller = new ExternalDataProvidersController(_mockDataProviderReader.Object, _mockBatchDataProviderReader.Object);
         }
 
         [TestMethod]
@@ -65,7 +63,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
             _mockBatchDataProviderReader.Setup(r => r.Read(It.IsAny<Func<DataProvider, bool>>()))
                 .ReturnsAsync(new DataProvider[0]);
             var okResult = (OkObjectResult)await _controller.GetDataProviders();
-            Assert.IsFalse(((IEnumerable<DataProviderDto>)okResult.Value).Any());
+            Assert.IsFalse(((IEnumerable<DataProvider>)okResult.Value).Any());
         }
 
         [TestMethod]
@@ -87,7 +85,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new DataProvider() {Id=1,Name="Betfair" }
                 });
             var okResult = (OkObjectResult)await _controller.GetDataProviders();
-            Assert.AreEqual(1, ((IEnumerable<DataProviderDto>)okResult.Value).Count());
+            Assert.AreEqual(1, ((IEnumerable<DataProvider>)okResult.Value).Count());
         }
 
         [TestMethod]
@@ -111,7 +109,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new DataProvider() {Id=2,Name="Betdaq" }
                 });
             var okResult = (OkObjectResult)await _controller.GetDataProviders();
-            Assert.AreEqual(2, ((IEnumerable<DataProviderDto>)okResult.Value).Count());
+            Assert.AreEqual(2, ((IEnumerable<DataProvider>)okResult.Value).Count());
         }
 
         [TestMethod]
@@ -168,7 +166,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
             _mockDataProviderReader.Setup(r => r.Read(It.IsAny<int>()))
                 .ReturnsAsync(new DataProvider() { Id = 1, Name = "Betfair" });
             OkObjectResult okResult = (OkObjectResult)await _controller.GetDataProvider(1);
-            Assert.AreEqual(1, ((DataProviderDto)okResult.Value).Id);
+            Assert.AreEqual(1, ((DataProvider)okResult.Value).Id);
         }
 
         [TestMethod]
@@ -177,7 +175,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
             _mockDataProviderReader.Setup(r => r.Read(It.IsAny<int>()))
                 .ReturnsAsync(new DataProvider() { Id = 1, Name = "Betfair" });
             OkObjectResult okResult = (OkObjectResult)await _controller.GetDataProvider(1);
-            Assert.AreEqual("Betfair", ((DataProviderDto)okResult.Value).Name);
+            Assert.AreEqual("Betfair", ((DataProvider)okResult.Value).Name);
         }
 
     }

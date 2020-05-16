@@ -17,7 +17,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
     [TestClass]
     public class ExternalEventTypesControllerTests
     {
-        private IMapper _mockMapper;
         private Func<int, IBatchReader<EventType>> _readerFactory;
         private Mock<IBatchReader<EventType>> _reader;
         private ExternalEventTypesController _controller;
@@ -26,10 +25,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         public void TestInit()
         {
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(new ExternalDtosProfile()));
-            _mockMapper = new Mapper(configuration);
             _reader = new Mock<IBatchReader<EventType>>();
             _readerFactory = n => _reader.Object;
-            _controller = new ExternalEventTypesController(_readerFactory, _mockMapper);
+            _controller = new ExternalEventTypesController(_readerFactory);
         }
 
         [TestMethod]
@@ -65,7 +63,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
             _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
                 .ReturnsAsync(new EventType[0]);
             var okResult = (OkObjectResult)await _controller.GetEventTypes(1);
-            Assert.IsFalse(((IEnumerable<EventTypeDto>)okResult.Value).Any());
+            Assert.IsFalse(((IEnumerable<EventType>)okResult.Value).Any());
         }
 
         [TestMethod]
@@ -87,7 +85,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new EventType() {Id="1",Name="Football" }
                 });
             var okResult = (OkObjectResult)await _controller.GetEventTypes(1);
-            Assert.AreEqual(1, ((IEnumerable<EventTypeDto>)okResult.Value).Count());
+            Assert.AreEqual(1, ((IEnumerable<EventType>)okResult.Value).Count());
         }
 
         [TestMethod]
@@ -111,9 +109,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new EventType() {Id="2",Name="Horse Racing" }
                 });
             var okResult = (OkObjectResult)await _controller.GetEventTypes(1);
-            Assert.AreEqual(2, ((IEnumerable<EventTypeDto>)okResult.Value).Count());
+            Assert.AreEqual(2, ((IEnumerable<EventType>)okResult.Value).Count());
         }
-
-
     }
 }

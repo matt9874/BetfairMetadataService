@@ -17,7 +17,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
     [TestClass]
     public class ExternalMarketTypesControllerTests
     {
-        private IMapper _mockMapper;
         private Func<int, IMarketTypesService> _marketTypesServiceFactory;
         private Mock<IMarketTypesService> _marketTypesService;
         private ExternalMarketTypesController _controller;
@@ -32,11 +31,10 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
             _mockEventTypeReader = new Mock<IReader<EventType, string>>();
             _mockCompetitionReader = new Mock<IReader<Competition, string>>();
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(new ExternalDtosProfile()));
-            _mockMapper = new Mapper(configuration);
             _marketTypesService = new Mock<IMarketTypesService>();
             _marketTypesServiceFactory = n => _marketTypesService.Object;
             _controller = new ExternalMarketTypesController(_mockDataProviderReader.Object, _mockEventTypeReader.Object,
-                _mockCompetitionReader.Object, _marketTypesServiceFactory, _mockMapper);
+                _mockCompetitionReader.Object, _marketTypesServiceFactory);
         }
 
         private void SetupNonNullParentObjects()
@@ -83,7 +81,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
             _marketTypesService.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[0]);
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByCompetition(1, "1");
-            Assert.IsFalse(((IEnumerable<MarketTypeDto>)okResult.Value).Any());
+            Assert.IsFalse(((IEnumerable<MarketType>)okResult.Value).Any());
         }
 
         [TestMethod]
@@ -107,7 +105,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new MarketType() {Name="WinDrawLose" }
                 });
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByCompetition(1, "1");
-            Assert.AreEqual(1, ((IEnumerable<MarketTypeDto>)okResult.Value).Count());
+            Assert.AreEqual(1, ((IEnumerable<MarketType>)okResult.Value).Count());
         }
 
         [TestMethod]
@@ -133,7 +131,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new MarketType() {Name="FirstGoalScorer" }
                 });
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByCompetition(1, "1");
-            Assert.AreEqual(2, ((IEnumerable<MarketTypeDto>)okResult.Value).Count());
+            Assert.AreEqual(2, ((IEnumerable<MarketType>)okResult.Value).Count());
         }
 
         [TestMethod]
@@ -173,7 +171,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
             _marketTypesService.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
                 .ReturnsAsync(new MarketType[0]);
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByEventType(1, "1");
-            Assert.IsFalse(((IEnumerable<MarketTypeDto>)okResult.Value).Any());
+            Assert.IsFalse(((IEnumerable<MarketType>)okResult.Value).Any());
         }
 
         [TestMethod]
@@ -197,7 +195,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new MarketType() {Name="WinDrawLose" }
                 });
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByEventType(1, "1");
-            Assert.AreEqual(1, ((IEnumerable<MarketTypeDto>)okResult.Value).Count());
+            Assert.AreEqual(1, ((IEnumerable<MarketType>)okResult.Value).Count());
         }
 
         [TestMethod]
@@ -223,7 +221,7 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                     new MarketType() {Name="FirstGoalScorer" }
                 });
             var okResult = (OkObjectResult)await _controller.GetMarketTypesByEventType(1, "1");
-            Assert.AreEqual(2, ((IEnumerable<MarketTypeDto>)okResult.Value).Count());
+            Assert.AreEqual(2, ((IEnumerable<MarketType>)okResult.Value).Count());
         }
     }
 }
