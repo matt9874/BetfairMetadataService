@@ -44,5 +44,13 @@ namespace BetfairMetadataService.API.Controllers
 
             return Ok(dataProvider);
         }
+
+        [HttpOptions]
+        public Task<IActionResult> GetDataProvidersOptions()
+        {
+            Response.Headers.Add("Allow", "GET,OPTIONS");
+            IActionResult actionResult = Ok();
+            return Task.FromResult(actionResult);
+        }
     }
 }

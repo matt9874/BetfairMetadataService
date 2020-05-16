@@ -30,5 +30,13 @@ namespace BetfairMetadataService.API.Controllers
 
             return Ok(competitions);
         }
+
+        [HttpOptions]
+        public Task<IActionResult> GetCompetitionsOptions()
+        {
+            Response.Headers.Add("Allow", "GET,OPTIONS");
+            IActionResult actionResult = Ok();
+            return Task.FromResult(actionResult);
+        }
     }
 }

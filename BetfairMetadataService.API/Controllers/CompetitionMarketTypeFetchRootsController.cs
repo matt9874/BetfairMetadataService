@@ -144,5 +144,12 @@ namespace BetfairMetadataService.API.Controllers
             return Ok(competitionMarketTypes);
         }
 
+        [HttpOptions]
+        public Task<IActionResult> GetCompetitionMarketTypesOptions()
+        {
+            Response.Headers.Add("Allow", "GET,OPTIONS,POST,DELETE");
+            IActionResult actionResult = Ok();
+            return Task.FromResult(actionResult);
+        }
     }
 }
