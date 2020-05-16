@@ -11,7 +11,7 @@ using BetfairMetadataService.WebRequests.BetfairApi.Readers;
 using BetfairMetadataService.WebRequests.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -122,6 +122,18 @@ namespace BetfairMetadataService.API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler(appBuilder =>
+                {
+                    appBuilder.Run(async context =>
+                    {
+                        //TO DO: Add logging
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsync("An unexpected error happened");
+                    });
+                });
             }
 
             app.UseHttpsRedirection();
