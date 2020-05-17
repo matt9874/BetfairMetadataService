@@ -25,7 +25,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
             var filter = new MarketFilter() {CompetitionIds = new HashSet<string>() {id } };
             var args = new Dictionary<string, object>()
             {
-                {"filter", new MarketFilter() }
+                {"filter", filter }
             };
             IList<CompetitionResult> results = await _requestInvoker.Invoke<IList<CompetitionResult>>(BetfairMethod.ListCompetitions, args);
             var competitions = _mapper.Map<IEnumerable<Domain.External.Competition>>(results);

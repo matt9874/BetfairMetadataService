@@ -25,7 +25,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
             var filter = new MarketFilter() {EventTypeIds = new HashSet<string>() {id } };
             var args = new Dictionary<string, object>()
             {
-                {"filter", new MarketFilter() }
+                {"filter", filter }
             };
             IList<EventTypeResult> results = await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes, args);
             var eventTypes = _mapper.Map<IEnumerable<Domain.External.EventType>>(results);
