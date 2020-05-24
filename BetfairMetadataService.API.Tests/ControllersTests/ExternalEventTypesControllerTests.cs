@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using BetfairMetadataService.API.AutomapperProfiles;
-using BetfairMetadataService.API.Controllers;
-using BetfairMetadataService.API.Models.External;
-using BetfairMetadataService.DataAccess.Interfaces;
+﻿using BetfairMetadataService.API.Controllers;
+using BetfairMetadataService.DataAccess.Interfaces.Repositories;
+using System;
 using BetfairMetadataService.Domain.External;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,59 +14,57 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
     [TestClass]
     public class ExternalEventTypesControllerTests
     {
-        private Func<int, IBatchReader<EventType>> _readerFactory;
-        private Mock<IBatchReader<EventType>> _reader;
+        private Mock<IExternalEventTypesRepository> _eventTypesRepository;
         private ExternalEventTypesController _controller;
 
         [TestInitialize]
         public void TestInit()
         {
-            var configuration = new MapperConfiguration(cfg => cfg.AddProfile(new ExternalDtosProfile()));
-            _reader = new Mock<IBatchReader<EventType>>();
-            _readerFactory = n => _reader.Object;
-            _controller = new ExternalEventTypesController(_readerFactory);
+            _eventTypesRepository = new Mock<IExternalEventTypesRepository>();
+            Func<int, IExternalEventTypesRepository> repositoryFactory = n => _eventTypesRepository.Object;
+            _controller = new ExternalEventTypesController(repositoryFactory);
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderThrowsArgumentException_ThrowsArgumentException()
+        public async Task GetEventTypes_RepositoryThrowsArgumentException_ThrowsArgumentException()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ThrowsAsync(new ArgumentException());
 
             await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await _controller.GetEventTypes(1));
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderReturnsNull_ThrowsException()
+        public async Task GetEventTypes_RepositoryReturnsNull_ThrowsException()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ReturnsAsync((IEnumerable<EventType>)null);
 
             await Assert.ThrowsExceptionAsync<Exception>(async () => await _controller.GetEventTypes(1));
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderReturnsEmpty_ReturnsOk()
+        public async Task GetEventTypes_RepositoryReturnsEmpty_ReturnsOk()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ReturnsAsync(new EventType[0]);
             var result = await _controller.GetEventTypes(1);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderReturnsEmpty_EmptyIEnumerable()
+        public async Task GetEventTypes_RepositoryReturnsEmpty_EmptyIEnumerable()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ReturnsAsync(new EventType[0]);
             var okResult = (OkObjectResult)await _controller.GetEventTypes(1);
             Assert.IsFalse(((IEnumerable<EventType>)okResult.Value).Any());
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderReturnsOne_ReturnsOk()
+        public async Task GetEventTypes_RepositoryReturnsOne_ReturnsOk()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ReturnsAsync(new EventType[] {
                     new EventType() {Id="1",Name="Football" }
                 });
@@ -78,9 +73,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderReturnsOne_IEnumerableOfCountOne()
+        public async Task GetEventTypes_RepositoryReturnsOne_IEnumerableOfCountOne()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ReturnsAsync(new EventType[] {
                     new EventType() {Id="1",Name="Football" }
                 });
@@ -89,9 +84,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderReturnsTwo_ReturnsOk()
+        public async Task GetEventTypes_RepositoryReturnsTwo_ReturnsOk()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ReturnsAsync(new EventType[] {
                     new EventType() {Id="1",Name="Football" },
                     new EventType() {Id="2",Name="Horse Racing" }
@@ -101,9 +96,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetEventTypes_BatchReaderReturnsOne_IEnumerableOfCountTwo()
+        public async Task GetEventTypes_RepositoryReturnsOne_IEnumerableOfCountTwo()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<EventType, bool>>()))
+            _eventTypesRepository.Setup(r => r.GetEventTypes())
                 .ReturnsAsync(new EventType[] {
                     new EventType() {Id="1",Name="Football" },
                     new EventType() {Id="2",Name="Horse Racing" }

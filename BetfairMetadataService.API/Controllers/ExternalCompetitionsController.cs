@@ -1,5 +1,5 @@
 ﻿using BetfairMetadataService.API.Filters;
-using BetfairMetadataService.DataAccess.Interfaces;
+using BetfairMetadataService.DataAccess.Interfaces.Repositories;
 using BetfairMetadataService.Domain.External;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,26 +12,49 @@ namespace BetfairMetadataService.API.Controllers
     [ApiController]
     public class ExternalCompetitionsController : ControllerBase
     {
-        private readonly Func<int, IBatchReader<Competition>> _batchReaderFactory;
+        private readonly Func<int, IExternalCompetitionsRepository> _competitionsRepositoryFactory;
+        private readonly Func<int, IExternalEventTypesRepository> _eventTypesRepositoryFactory;
 
-        public ExternalCompetitionsController(Func<int, IBatchReader<Competition>> batchReaderFactory)
+        public ExternalCompetitionsController(Func<int, IExternalCompetitionsRepository> competitionsRepositoryFactory,
+            Func<int, IExternalEventTypesRepository> eventTypesRepositoryFactory)
         {
-            _batchReaderFactory = batchReaderFactory;
+            _competitionsRepositoryFactory = competitionsRepositoryFactory;
+            _eventTypesRepositoryFactory = eventTypesRepositoryFactory;
         }
 
         [HttpGet("dataProviders/{dataProviderId}/competitions")]
-        [ExternalCompetitionsResultFilterAttribute]
+        [ExternalCompetitionsResultFilter]
         public async Task<IActionResult> GetCompetitions(int dataProviderId)
         {
-            IBatchReader<Competition> reader = _batchReaderFactory?.Invoke(dataProviderId);
-            IEnumerable<Competition> competitions = await reader.Read(c => true);
+            IExternalCompetitionsRepository repository = _competitionsRepositoryFactory?.Invoke(dataProviderId);
+            IEnumerable<Competition> competitions = await repository.GetCompetitions();
             if (competitions == null)
                 throw new Exception("IBatchReader<Competition> returned null IEnumerable");
 
             return Ok(competitions);
         }
 
-        [HttpOptions]
+        [HttpGet("dataProviders/{dataProviderId}/eventTypes/{eventTypeId}/competitions")]
+        [ExternalCompetitionsResultFilter]
+        public async Task<IActionResult> GetCompetitionsByEventType(int dataProviderId, string eventTypeId)
+        {
+            IExternalEventTypesRepository eventTypesRepository = _eventTypesRepositoryFactory?.Invoke(dataProviderId);
+            if (eventTypesRepository == null)
+                return NotFound($"Unable to find data provider with id of {dataProviderId}");
+
+            EventType eventType = await eventTypesRepository.GetEventType(eventTypeId);
+            if (eventType == null)
+                return NotFound($"Could not find event type with id of {eventTypeId} for data provider with id {dataProviderId}");
+
+            IExternalCompetitionsRepository competitionsRepository = _competitionsRepositoryFactory?.Invoke(dataProviderId);
+            IEnumerable<Competition> competitions = await competitionsRepository.GetCompetitionsByEventType(eventTypeId);
+            if (competitions == null)
+                throw new Exception("IBatchReader<Competition> returned null IEnumerable");
+
+            return Ok(competitions);
+        }
+
+        [HttpOptions("competitions")]
         public Task<IActionResult> GetCompetitionsOptions()
         {
             Response.Headers.Add("Allow", "GET,OPTIONS");

@@ -8,7 +8,8 @@ using BetfairMetadataService.SqlServer.FetchRoots;
 using BetfairMetadataService.WebRequests;
 using BetfairMetadataService.WebRequests.BetfairApi;
 using BetfairMetadataService.WebRequests.BetfairApi.Readers;
-using BetfairMetadataService.WebRequests.Interfaces;
+using BetfairMetadataService.DataAccess.Interfaces.Repositories;
+using BetfairMetadataService.DataAccess.Interfaces.WebRequests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +24,7 @@ using Polly.Caching;
 using Polly.Caching.Memory;
 using Polly.Registry;
 using System;
+using BetfairMetadataService.WebRequests.BetfairApi.Repositories;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 
@@ -98,40 +100,43 @@ namespace BetfairMetadataService.API
 
             services.AddScoped<IBatchReader<DataProvider>, ConfigurationBatchDataProviderReader>();
             services.AddScoped<IReader<DataProvider, int>, ConfigurationDataProviderReader>();
-            services.AddScoped<IReader<EventType, string>, BetfairEventTypeReader>();
-            services.AddScoped<IReader<Competition, string>, BetfairCompetitionReader>();
-            services.AddScoped<Func<int, IBatchReader<EventType>>>(sp =>
+
+            services.AddScoped<IBetfairBatchReader<EventType>, BetfairEventTypesBatchReader>();
+            services.AddScoped<IBetfairBatchReader<Competition>, BetfairCompetitionsBatchReader>();
+            services.AddScoped<IBetfairBatchReader<MarketType>, BetfairMarketTypesBatchReader>();
+
+            services.AddScoped<Func<int, IExternalEventTypesRepository>>(sp =>
                 dataProviderId =>
                 {
                     switch (dataProviderId)
                     {
                         case (1):
-                            return new BetfairEventTypesBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                            return new BetfairEventTypesRepository(sp.GetRequiredService<IBetfairBatchReader<EventType>>());
                         default:
-                            return new BetfairEventTypesBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                            return null;
                     }
                 });
-            services.AddScoped<Func<int, IBatchReader<Competition>>>(sp =>
+            services.AddScoped<Func<int, IExternalCompetitionsRepository>>(sp =>
                 dataProviderId =>
                 {
                     switch (dataProviderId)
                     {
                         case (1):
-                            return new BetfairCompetitionsBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                            return new BetfairCompetitionsRepository(sp.GetRequiredService<IBetfairBatchReader<Competition>>());
                         default:
-                            return new BetfairCompetitionsBatchReader(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                            return null;
                     }
                 });
 
-            services.AddScoped<Func<int, IMarketTypesService>>(sp =>
+            services.AddScoped<Func<int, IExternalMarketTypesRepository>>(sp =>
                 dataProviderId =>
                 {
                     switch (dataProviderId)
                     {
                         case (1):
-                            return new MarketTypesService(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                            return new BetfairMarketTypesRepository(sp.GetRequiredService<IBetfairBatchReader<MarketType>>());
                         default:
-                            return new MarketTypesService(sp.GetRequiredService<IRequestInvokerAsync>(), sp.GetRequiredService<IMapper>());
+                            return null;
                     }
                 });
 
@@ -144,6 +149,7 @@ namespace BetfairMetadataService.API
             services.AddScoped<ISaver<CompetitionMarketType>, CompetitionMarketTypeFetchRootSaver>();
             services.AddScoped<IReader<CompetitionMarketType, Tuple<int, string, string>>, CompetitionMarketTypeFetchRootReader>();
             services.AddScoped<IBatchReader<CompetitionMarketType>, CompetitionMarketTypeFetchRootBatchReader>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

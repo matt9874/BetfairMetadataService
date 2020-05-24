@@ -1,15 +1,13 @@
 ﻿using AutoMapper;
-using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain;
-using BetfairMetadataService.WebRequests.Interfaces;
-using System;
+using BetfairMetadataService.Domain.BetfairDtos;
+using BetfairMetadataService.DataAccess.Interfaces.WebRequests;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
 {
-    public abstract class AbstractBetfairBatchReader<TEntity, TBetfairDto> : IBatchReader<TEntity>
+    public abstract class AbstractBetfairBatchReader<TEntity, TBetfairDto> : IBetfairBatchReader<TEntity>
     {
         private readonly IRequestInvokerAsync _requestInvoker;
         private readonly IMapper _mapper;
@@ -22,11 +20,10 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
             _method = method;
         }
 
-        public async Task<IEnumerable<TEntity>> Read(Func<TEntity, bool> filter)
+        public async Task<IEnumerable<TEntity>> Read(MarketFilter filter)
         {
-            IList<TBetfairDto> results = await _requestInvoker.Invoke<IList<TBetfairDto>>(_method);
-            var eventTypes = _mapper.Map<IEnumerable<TEntity>>(results);
-            return eventTypes.Where(filter);
+            IList<TBetfairDto> results = await _requestInvoker.Invoke<IList<TBetfairDto>>(_method, filter);
+            return _mapper.Map<IEnumerable<TEntity>>(results);
         }
     }
 }

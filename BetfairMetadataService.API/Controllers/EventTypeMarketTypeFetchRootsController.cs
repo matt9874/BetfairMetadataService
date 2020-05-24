@@ -1,6 +1,7 @@
 ﻿using BetfairMetadataService.API.Filters;
 using BetfairMetadataService.API.Models.FetchRoots;
 using BetfairMetadataService.DataAccess.Interfaces;
+using BetfairMetadataService.DataAccess.Interfaces.Repositories;
 using BetfairMetadataService.Domain.External;
 using BetfairMetadataService.Domain.FetchRoots;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace BetfairMetadataService.API.Controllers
     [ApiController]
     public class EventTypeMarketTypeFetchRootsController : ControllerBase
     {
-        private readonly Func<int, IMarketTypesService> _marketTypesServiceFactory;
+        private readonly Func<int, IExternalMarketTypesRepository> _marketTypesRepositoryFactory;
         private readonly IReader<EventTypeMarketType, Tuple<int,string,string>> _eventTypeMarketTypeReader;
         private readonly IBatchReader<EventTypeMarketType> _eventTypeMarketTypeBatchReader;
         private readonly ISaver<EventTypeMarketType> _eventTypeMarketTypeSaver;
@@ -26,7 +27,7 @@ namespace BetfairMetadataService.API.Controllers
         public EventTypeMarketTypeFetchRootsController(IReader<DataProvider, int> dataProviderReader, 
             IReader<EventType, string> eventTypeReader,
             IBatchReader<EventTypeMarketType> eventTypeMarketTypeBatchReader,
-            Func<int, IMarketTypesService> marketTypesServiceFactory,
+            Func<int, IExternalMarketTypesRepository> marketTypesRepositoryFactory,
             IReader<EventTypeMarketType, Tuple<int, string, string>> eventTypeMarketTypeReader, 
             ISaver<EventTypeMarketType> eventTypeMarketTypeSaver,
             IDeleter<EventTypeMarketType> eventTypeMarketTypeDeleter)
@@ -34,7 +35,7 @@ namespace BetfairMetadataService.API.Controllers
             _dataProviderReader = dataProviderReader;
             _eventTypeReader = eventTypeReader;
             _eventTypeMarketTypeBatchReader = eventTypeMarketTypeBatchReader;
-            _marketTypesServiceFactory = marketTypesServiceFactory;
+            _marketTypesRepositoryFactory = marketTypesRepositoryFactory;
             _eventTypeMarketTypeReader = eventTypeMarketTypeReader;
             _eventTypeMarketTypeSaver = eventTypeMarketTypeSaver;
             _eventTypeMarketTypeDeleter = eventTypeMarketTypeDeleter;
@@ -53,8 +54,8 @@ namespace BetfairMetadataService.API.Controllers
             if (eventType == null)
                 return NotFound($"Unable to find eventType with id {eventTypeId}");
 
-            IMarketTypesService marketTypesService = _marketTypesServiceFactory?.Invoke(dataProviderId);
-            IEnumerable<MarketType> marketTypes = await marketTypesService.GetMarketTypesByEventTypeId(eventTypeId);
+            IExternalMarketTypesRepository marketTypesRepository = _marketTypesRepositoryFactory?.Invoke(dataProviderId);
+            IEnumerable<MarketType> marketTypes = await marketTypesRepository.GetMarketTypesByEventTypeId(eventTypeId);
 
             if (!marketTypes.Any(mtr => mtr.Name == eventTypeMarketType.MarketType))
                 return NotFound($"There are no markets with type {eventTypeMarketType.MarketType} in the eventType with id {eventTypeId} in the Betfair system");

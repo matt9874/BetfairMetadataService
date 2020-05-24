@@ -1,8 +1,9 @@
 ﻿using BetfairMetadataService.Domain;
 using BetfairMetadataService.Domain.BetfairDtos;
-using BetfairMetadataService.WebRequests.Interfaces;
+using BetfairMetadataService.DataAccess.Interfaces.WebRequests;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Polly;
 using Polly.Registry;
 using Polly.Timeout;
@@ -56,15 +57,15 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             _registry = registry;
         }
 
-        public async Task<T> Invoke<T>(BetfairMethod method, IDictionary<string, object> args = null)
+        public async Task<T> Invoke<T>(BetfairMethod method, MarketFilter marketFilter = null)
         {
             if (method== BetfairMethod.UnknownMethod)
                 throw new ArgumentOutOfRangeException("Method must be defined", "method");
             string methodName = BetfairMethodExtensions.GetMethodName(method);
 
-            args = args ?? new Dictionary<string, object>()
+            IDictionary<string, object> args = new Dictionary<string, object>()
             {
-                {"filter", new MarketFilter() }
+                {"filter", marketFilter ?? new MarketFilter() }
             };
 
             LoginResponse loginResponse = await _authenticationClient.Login();
@@ -76,7 +77,12 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             else
                 _customHeaders[_sessionTokenHeader] = loginResponse.SessionToken;
 
-            var json = JsonConvert.SerializeObject( new JsonRequest { Method = _methodPrefix + methodName, Id = 1, Params = args });
+            var json = JsonConvert.SerializeObject( new JsonRequest { Method = _methodPrefix + methodName, Id = 1, Params = args },
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                });
+            
             var content = new StringContent(json, Encoding.UTF8, _requestContentType);
             
             foreach(var header in _customHeaders)

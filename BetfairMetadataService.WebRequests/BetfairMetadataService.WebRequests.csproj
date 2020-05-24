@@ -16,7 +16,6 @@
   <ItemGroup>
     <ProjectReference Include="..\BetfairMetadataService.DataAccess.Interfaces\BetfairMetadataService.DataAccess.Interfaces.csproj" />
     <ProjectReference Include="..\BetfairMetadataService.Domain\BetfairMetadataService.Domain.csproj" />
-    <ProjectReference Include="..\BetfairMetadataService.WebRequests.Interfaces\BetfairMetadataService.WebRequests.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

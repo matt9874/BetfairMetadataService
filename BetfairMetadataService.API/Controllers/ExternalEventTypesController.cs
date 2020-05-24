@@ -1,5 +1,5 @@
 ﻿using BetfairMetadataService.API.Filters;
-using BetfairMetadataService.DataAccess.Interfaces;
+using BetfairMetadataService.DataAccess.Interfaces.Repositories;
 using BetfairMetadataService.Domain.External;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,26 +12,29 @@ namespace BetfairMetadataService.API.Controllers
     [ApiController]
     public class ExternalEventTypesController: ControllerBase
     {
-        private readonly Func<int, IBatchReader<EventType>> _batchReaderFactory;
+        private readonly Func<int, IExternalEventTypesRepository> _repositoryFactory;
 
-        public ExternalEventTypesController(Func<int, IBatchReader<EventType>> batchReaderFactory)
+        public ExternalEventTypesController(Func<int, IExternalEventTypesRepository> repositoryFactory)
         {
-            _batchReaderFactory = batchReaderFactory;
+            _repositoryFactory = repositoryFactory;
         }
 
         [HttpGet("dataProviders/{dataProviderId}/eventTypes")]
         [ExternalEventTypesResultFilter]
         public async Task<IActionResult> GetEventTypes(int dataProviderId)
         {
-            IBatchReader<EventType> reader = _batchReaderFactory?.Invoke(dataProviderId);
-            IEnumerable<EventType> eventTypes = await reader.Read(et=>true);
+            IExternalEventTypesRepository repository = _repositoryFactory?.Invoke(dataProviderId);
+            if (repository == null)
+                return NotFound($"Unable to find data provider with id of {dataProviderId}");
+
+            IEnumerable<EventType> eventTypes = await repository.GetEventTypes();
             if (eventTypes == null)
                 throw new Exception("IBatchReader<EventType> returned null IEnumerable");
 
             return Ok(eventTypes);
         }
 
-        [HttpOptions]
+        [HttpOptions("eventTypes")]
         public Task<IActionResult> GetEventTypesOptions()
         {
             Response.Headers.Add("Allow", "GET,OPTIONS");

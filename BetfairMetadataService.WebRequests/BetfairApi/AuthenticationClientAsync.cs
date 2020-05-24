@@ -1,5 +1,5 @@
 ﻿using BetfairMetadataService.Domain.BetfairDtos;
-using BetfairMetadataService.WebRequests.Interfaces;
+using BetfairMetadataService.DataAccess.Interfaces.WebRequests;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;

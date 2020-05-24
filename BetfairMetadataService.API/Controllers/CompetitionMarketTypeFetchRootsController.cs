@@ -1,6 +1,7 @@
 ﻿using BetfairMetadataService.API.Filters;
 using BetfairMetadataService.API.Models.FetchRoots;
 using BetfairMetadataService.DataAccess.Interfaces;
+using BetfairMetadataService.DataAccess.Interfaces.Repositories;
 using BetfairMetadataService.Domain.External;
 using BetfairMetadataService.Domain.FetchRoots;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace BetfairMetadataService.API.Controllers
     [ApiController]
     public class CompetitionMarketTypeFetchRootsController : ControllerBase
     {
-        private readonly Func<int, IMarketTypesService> _marketTypesServiceFactory;
+        private readonly Func<int, IExternalMarketTypesRepository> _marketTypesRepositoryFactory;
         private readonly IReader<CompetitionMarketType, Tuple<int, string, string>> _competitionMarketTypeReader;
         private readonly IBatchReader<CompetitionMarketType> _competitionMarketTypeBatchReader;
         private readonly ISaver<CompetitionMarketType> _competitionMarketTypeSaver;
@@ -26,7 +27,7 @@ namespace BetfairMetadataService.API.Controllers
         public CompetitionMarketTypeFetchRootsController(IReader<DataProvider, int> dataProviderReader,
             IReader<Competition, string> competitionReader,
             IBatchReader<CompetitionMarketType> competitionMarketTypeBatchReader,
-            Func<int, IMarketTypesService> marketTypesServiceFactory,
+            Func<int, IExternalMarketTypesRepository> marketTypesRepositoryFactory,
             IReader<CompetitionMarketType, Tuple<int, string, string>> competitionMarketTypeReader,
             ISaver<CompetitionMarketType> competitionMarketTypeSaver,
             IDeleter<CompetitionMarketType> competitionMarketTypeDeleter)
@@ -34,7 +35,7 @@ namespace BetfairMetadataService.API.Controllers
             _dataProviderReader = dataProviderReader;
             _competitionReader = competitionReader;
             _competitionMarketTypeBatchReader = competitionMarketTypeBatchReader;
-            _marketTypesServiceFactory = marketTypesServiceFactory;
+            _marketTypesRepositoryFactory = marketTypesRepositoryFactory;
             _competitionMarketTypeReader = competitionMarketTypeReader;
             _competitionMarketTypeSaver = competitionMarketTypeSaver;
             _competitionMarketTypeDeleter = competitionMarketTypeDeleter;
@@ -53,8 +54,8 @@ namespace BetfairMetadataService.API.Controllers
             if (competition == null)
                 return NotFound($"Unable to find competition with id {competitionId}");
 
-            IMarketTypesService marketTypesService = _marketTypesServiceFactory?.Invoke(dataProviderId);
-            IEnumerable<MarketType> marketTypes = await marketTypesService.GetMarketTypesByCompetitionId(competitionId);
+            IExternalMarketTypesRepository marketTypesRepository = _marketTypesRepositoryFactory?.Invoke(dataProviderId);
+            IEnumerable<MarketType> marketTypes = await marketTypesRepository.GetMarketTypesByCompetitionId(competitionId);
 
             if (!marketTypes.Any(mtr => mtr.Name == competitionMarketType.MarketType))
                 return NotFound($"There are no markets with type {competitionMarketType.MarketType} in the competition with id {competitionId} in the Betfair system");

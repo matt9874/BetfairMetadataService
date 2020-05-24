@@ -1,7 +1,7 @@
 ﻿using BetfairMetadataService.Domain.BetfairDtos;
 using System.Threading.Tasks;
 
-namespace BetfairMetadataService.WebRequests.Interfaces
+namespace BetfairMetadataService.DataAccess.Interfaces.WebRequests
 {
     public interface IAuthenticationClientAsync
     {

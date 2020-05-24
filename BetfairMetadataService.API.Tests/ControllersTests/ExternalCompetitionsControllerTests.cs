@@ -1,8 +1,5 @@
-﻿using AutoMapper;
-using BetfairMetadataService.API.AutomapperProfiles;
-using BetfairMetadataService.API.Controllers;
-using BetfairMetadataService.API.Models.External;
-using BetfairMetadataService.DataAccess.Interfaces;
+﻿using BetfairMetadataService.API.Controllers;
+using BetfairMetadataService.DataAccess.Interfaces.Repositories;
 using BetfairMetadataService.Domain.External;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,59 +14,60 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
     [TestClass]
     public class ExternalCompetitionsControllerTests
     {
-        private Func<int, IBatchReader<Competition>> _readerFactory;
-        private Mock<IBatchReader<Competition>> _reader;
+        private Mock<IExternalEventTypesRepository> _eventTypesRepository;
+        private Mock<IExternalCompetitionsRepository> _competitionsRepository;
         private ExternalCompetitionsController _controller;
 
         [TestInitialize]
         public void TestInit()
         {
-            var configuration = new MapperConfiguration(cfg => cfg.AddProfile(new ExternalDtosProfile()));
-            _reader = new Mock<IBatchReader<Competition>>();
-            _readerFactory = n => _reader.Object;
-            _controller = new ExternalCompetitionsController(_readerFactory);
+            _eventTypesRepository = new Mock<IExternalEventTypesRepository>();
+            Func<int, IExternalEventTypesRepository> eventTypesRepositoryFactory = n => _eventTypesRepository.Object;
+            _competitionsRepository = new Mock<IExternalCompetitionsRepository>();
+            Func<int, IExternalCompetitionsRepository> competitionsRepositoryFactory = n => _competitionsRepository.Object;
+            _controller = new ExternalCompetitionsController(competitionsRepositoryFactory, eventTypesRepositoryFactory);
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderThrowsArgumentException_ThrowsArgumentException()
+        public async Task GetCompetitions_RepositoryThrowsArgumentException_ThrowsArgumentException()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ThrowsAsync(new ArgumentException());
 
             await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await _controller.GetCompetitions(1));
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderReturnsNull_ThrowsException()
+        public async Task GetCompetitions_RepositoryReturnsNull_ThrowsException()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ReturnsAsync((IEnumerable<Competition>)null);
 
             await Assert.ThrowsExceptionAsync<Exception>(async () => await _controller.GetCompetitions(1));
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderReturnsEmpty_ReturnsOk()
+        public async Task GetCompetitions_RepositoryReturnsEmpty_ReturnsOk()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ReturnsAsync(new Competition[0]);
             var result = await _controller.GetCompetitions(1);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderReturnsEmpty_EmptyIEnumerable()
+        public async Task GetCompetitions_RepositoryReturnsEmpty_EmptyIEnumerable()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ReturnsAsync(new Competition[0]);
             var okResult = (OkObjectResult)await _controller.GetCompetitions(1);
             Assert.IsFalse(((IEnumerable<Competition>)okResult.Value).Any());
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderReturnsOne_ReturnsOk()
+        public async Task GetCompetitions_RepositoryReturnsOne_ReturnsOk()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ReturnsAsync(new Competition[] {
                     new Competition() {Id="1",Name="Prem League" }
                 });
@@ -78,9 +76,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderReturnsOne_IEnumerableOfCountOne()
+        public async Task GetCompetitions_RepositoryReturnsOne_IEnumerableOfCountOne()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ReturnsAsync(new Competition[] {
                     new Competition() {Id="1",Name="Prem League" }
                 });
@@ -89,9 +87,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderReturnsTwo_ReturnsOk()
+        public async Task GetCompetitions_RepositoryReturnsTwo_ReturnsOk()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ReturnsAsync(new Competition[] {
                     new Competition() {Id="1",Name="Prem League" },
                     new Competition() {Id="2",Name="Championship" }
@@ -101,9 +99,9 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetCompetitions_BatchReaderReturnsOne_IEnumerableOfCountTwo()
+        public async Task GetCompetitions_RepositoryReturnsTwo_IEnumerableOfCountTwo()
         {
-            _reader.Setup(r => r.Read(It.IsAny<Func<Competition, bool>>()))
+            _competitionsRepository.Setup(r => r.GetCompetitions())
                 .ReturnsAsync(new Competition[] {
                     new Competition() {Id="1",Name="Football" },
                     new Competition() {Id="2",Name="Horse Racing" }
