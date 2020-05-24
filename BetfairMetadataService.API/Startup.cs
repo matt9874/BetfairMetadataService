@@ -101,6 +101,9 @@ namespace BetfairMetadataService.API
             services.AddScoped<IBatchReader<DataProvider>, ConfigurationBatchDataProviderReader>();
             services.AddScoped<IReader<DataProvider, int>, ConfigurationDataProviderReader>();
 
+            services.AddScoped<IReader<EventType, string>, BetfairEventTypeReader>();
+            services.AddScoped<IReader<Competition, string>, BetfairCompetitionReader>();
+
             services.AddScoped<IBetfairBatchReader<EventType>, BetfairEventTypesBatchReader>();
             services.AddScoped<IBetfairBatchReader<Competition>, BetfairCompetitionsBatchReader>();
             services.AddScoped<IBetfairBatchReader<MarketType>, BetfairMarketTypesBatchReader>();
