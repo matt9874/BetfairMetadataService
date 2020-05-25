@@ -1,8 +1,7 @@
-﻿using BetfairMetadataService.Domain.BetfairDtos;
-using BetfairMetadataService.WebRequests.Interfaces;
+﻿using BetfairMetadataService.API.WorkerInterfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,11 +10,12 @@ namespace BetfairMetadataService.API.Workers
     public class MetadataFetchWorker : IHostedService, IDisposable
     {
         private static readonly TimeSpan _workerStartTimeSpan = TimeSpan.FromSeconds(5);
-        private readonly IRequestInvokerAsync _requestInvoker;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public MetadataFetchWorker(IRequestInvokerAsync requestInvoker)
+        public MetadataFetchWorker(IServiceScopeFactory scopeFactory)
         {
-            _requestInvoker = requestInvoker;
+            //TODO: get worker time interval from config
+            _scopeFactory = scopeFactory;
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -28,10 +28,11 @@ namespace BetfairMetadataService.API.Workers
 
         private async Task FetchMetadata()
         {
-            //var x = await _requestInvoker.Invoke<IList<EventTypeResult>>("listEventTypes", new Dictionary<string, object>()
-            //{
-            //    {"filter", new MarketFilter() }
-            //});
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var worker = scope.ServiceProvider.GetRequiredService<IWorker>();
+                await worker.DoWork();
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

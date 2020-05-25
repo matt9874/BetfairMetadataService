@@ -9,9 +9,9 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
         IBetfairBatchReader<Domain.External.EventType>
     {
         public BetfairEventTypesBatchReader(IRequestInvokerAsync requestInvoker, IMapper mapper) 
-            :base(requestInvoker, mapper, BetfairMethod.ListEventTypes)
-        {
+            :base(requestInvoker, mapper)
+        {}
 
-        }
+        protected override BetfairMethod _method { get { return BetfairMethod.ListEventTypes; } }
     }
 }

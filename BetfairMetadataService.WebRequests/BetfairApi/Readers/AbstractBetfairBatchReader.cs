@@ -11,13 +11,12 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
     {
         private readonly IRequestInvokerAsync _requestInvoker;
         private readonly IMapper _mapper;
-        private readonly BetfairMethod _method;
+        protected abstract BetfairMethod _method { get; }
 
-        public AbstractBetfairBatchReader(IRequestInvokerAsync requestInvoker, IMapper mapper, BetfairMethod method)
+        public AbstractBetfairBatchReader(IRequestInvokerAsync requestInvoker, IMapper mapper)
         {
             _requestInvoker = requestInvoker;
             _mapper = mapper;
-            _method = method;
         }
 
         public async Task<IEnumerable<TEntity>> Read(MarketFilter filter)

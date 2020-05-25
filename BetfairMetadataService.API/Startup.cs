@@ -27,6 +27,8 @@ using System;
 using BetfairMetadataService.WebRequests.BetfairApi.Repositories;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
+using BetfairMetadataService.API.Workers;
+using BetfairMetadataService.API.WorkerInterfaces;
 
 namespace BetfairMetadataService.API
 {
@@ -106,6 +108,7 @@ namespace BetfairMetadataService.API
 
             services.AddScoped<IBetfairBatchReader<EventType>, BetfairEventTypesBatchReader>();
             services.AddScoped<IBetfairBatchReader<Competition>, BetfairCompetitionsBatchReader>();
+            services.AddScoped<IBetfairBatchReader<Event>, BetfairEventsBatchReader>();
             services.AddScoped<IBetfairBatchReader<MarketType>, BetfairMarketTypesBatchReader>();
 
             services.AddScoped<Func<int, IExternalEventTypesRepository>>(sp =>
@@ -126,6 +129,18 @@ namespace BetfairMetadataService.API
                     {
                         case (1):
                             return new BetfairCompetitionsRepository(sp.GetRequiredService<IBetfairBatchReader<Competition>>());
+                        default:
+                            return null;
+                    }
+                });
+
+            services.AddScoped<Func<int, IExternalEventsRepository>>(sp =>
+                dataProviderId =>
+                {
+                    switch (dataProviderId)
+                    {
+                        case (1):
+                            return new BetfairEventsRepository(sp.GetRequiredService<IBetfairBatchReader<Event>>());
                         default:
                             return null;
                     }
@@ -153,6 +168,13 @@ namespace BetfairMetadataService.API
             services.AddScoped<IReader<CompetitionMarketType, Tuple<int, string, string>>, CompetitionMarketTypeFetchRootReader>();
             services.AddScoped<IBatchReader<CompetitionMarketType>, CompetitionMarketTypeFetchRootBatchReader>();
 
+            services.AddScoped<BetfairCompetitionsWorker>();
+            services.AddScoped<IWorker>(sp => new CompositeWorker(
+                new IWorker[]
+                {
+                    sp.GetRequiredService<BetfairCompetitionsWorker>()
+                }));
+            services.AddScoped<ICompetitionMarketTypeWorker, BetfairCompetitionWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

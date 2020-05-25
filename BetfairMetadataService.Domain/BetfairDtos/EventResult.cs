@@ -1,8 +1,8 @@
 ﻿namespace BetfairMetadataService.Domain.BetfairDtos
 {
-    public class CompetitionResult
+    public class EventResult
     {
-        public Competition Competition { get; set; }
+        public Event Event { get; set; }
         public int MarketCount { get; set; }
     }
 }

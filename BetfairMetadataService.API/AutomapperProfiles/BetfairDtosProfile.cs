@@ -11,10 +11,21 @@ namespace BetfairMetadataService.API.AutomapperProfiles
             CreateMap<EventTypeResult, Domain.External.EventType>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(o => o.EventType.Name))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(o => o.EventType.Id));
+
+            CreateMap<Domain.BetfairDtos.Event, Domain.External.Event>();
+
             CreateMap<CompetitionResult, Domain.External.Competition>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(o => o.Competition.Name))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(o => o.Competition.Id))
                 .ForMember(dest => dest.Region, opt => opt.MapFrom(o => o.Competition.Region));
+
+            CreateMap<EventResult, Domain.External.Event>()
+                .ForMember(dest => dest.CountryCode, opt => opt.MapFrom(o => o.Event.CountryCode))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(o => o.Event.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(o => o.Event.Name))
+                .ForMember(dest => dest.OpenDate, opt => opt.MapFrom(o => o.Event.OpenDate))
+                .ForMember(dest => dest.Timezone, opt => opt.MapFrom(o => o.Event.Timezone))
+                .ForMember(dest => dest.Venue, opt => opt.MapFrom(o => o.Event.Venue));
 
             CreateMap<MarketTypeResult, MarketType>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(mtr => mtr.MarketType));

@@ -32,5 +32,18 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
             };
             return (await _betfairBatchReader.Read(filter)).FirstOrDefault();
         }
+
+        public async Task<Domain.External.EventType> GetEventTypeForCompetition(string competitionId)
+        {
+
+            var filter = new MarketFilter()
+            {
+                CompetitionIds = new HashSet<string>()
+                {
+                    competitionId
+                }
+            };
+            return (await _betfairBatchReader.Read(filter)).FirstOrDefault();
+        }
     }
 }

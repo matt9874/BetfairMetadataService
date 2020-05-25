@@ -8,5 +8,6 @@ namespace BetfairMetadataService.DataAccess.Interfaces.Repositories
     {
         Task<IEnumerable<EventType>> GetEventTypes();
         Task<EventType> GetEventType(string id);
+        Task<EventType> GetEventTypeForCompetition(string competitionId);
     }
 }

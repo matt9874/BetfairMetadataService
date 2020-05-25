@@ -9,9 +9,9 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
         IBetfairBatchReader<Domain.External.Competition>
     {
         public BetfairCompetitionsBatchReader(IRequestInvokerAsync requestInvoker, IMapper mapper)
-            : base(requestInvoker, mapper, BetfairMethod.ListCompetitions)
-        {
+            : base(requestInvoker, mapper)
+        {}
 
-        }
+        protected override BetfairMethod _method { get { return BetfairMethod.ListCompetitions; } }
     }
 }
