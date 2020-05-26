@@ -29,6 +29,14 @@ namespace BetfairMetadataService.API.AutomapperProfiles
 
             CreateMap<MarketTypeResult, MarketType>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(mtr => mtr.MarketType));
+
+            CreateMap<MarketCatalogue, Market>()
+                .ForMember(dest => dest.EventId, opt => opt.MapFrom(mc => mc.Event.Id))
+                .IncludeMembers(mc => mc.Description);
+
+            CreateMap<Domain.BetfairDtos.MarketBettingType, Domain.External.MarketBettingType>();
+            CreateMap<MarketDescription, Market>();
+            CreateMap<RunnerDescription, Selection>();
         }
     }
 }

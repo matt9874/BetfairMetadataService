@@ -110,6 +110,7 @@ namespace BetfairMetadataService.API
             services.AddScoped<IBetfairBatchReader<Competition>, BetfairCompetitionsBatchReader>();
             services.AddScoped<IBetfairBatchReader<Event>, BetfairEventsBatchReader>();
             services.AddScoped<IBetfairBatchReader<MarketType>, BetfairMarketTypesBatchReader>();
+            services.AddScoped<IBetfairBatchReader<Market>, BetfairMarketsBatchReader>();
 
             services.AddScoped<Func<int, IExternalEventTypesRepository>>(sp =>
                 dataProviderId =>
@@ -153,6 +154,18 @@ namespace BetfairMetadataService.API
                     {
                         case (1):
                             return new BetfairMarketTypesRepository(sp.GetRequiredService<IBetfairBatchReader<MarketType>>());
+                        default:
+                            return null;
+                    }
+                });
+
+            services.AddScoped<Func<int, IExternalMarketsRepository>>(sp =>
+                dataProviderId =>
+                {
+                    switch (dataProviderId)
+                    {
+                        case (1):
+                            return new BetfairMarketsRepository(sp.GetRequiredService<IBetfairBatchReader<Market>>());
                         default:
                             return null;
                     }

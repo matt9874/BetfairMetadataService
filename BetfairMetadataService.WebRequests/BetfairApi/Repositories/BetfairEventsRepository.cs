@@ -15,13 +15,17 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
             _eventsReader = eventsReader;
         }
 
-        public async Task<IEnumerable<Domain.External.Event>> GetEventsByCompetitionId(string competitionId)
+        public async Task<IEnumerable<Domain.External.Event>> GetEventsByCompetitionIdAndMarketType(string competitionId, string marketType)
         {
             var filter = new MarketFilter()
             { 
                 CompetitionIds = new HashSet<string>()
                 { 
                     competitionId
+                },
+                MarketTypeCodes = new HashSet<string>()
+                { 
+                    marketType
                 }
             };
             return await _eventsReader.Read(filter);

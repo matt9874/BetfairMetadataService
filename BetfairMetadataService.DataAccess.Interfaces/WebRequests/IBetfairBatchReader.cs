@@ -6,6 +6,6 @@ namespace BetfairMetadataService.DataAccess.Interfaces.WebRequests
 {
     public interface IBetfairBatchReader<TEntity>
     {
-        Task<IEnumerable<TEntity>> Read(MarketFilter filter);
+        Task<IEnumerable<TEntity>> Read(MarketFilter filter, HashSet<MarketProjection> marketProjections = null);
     }
 }

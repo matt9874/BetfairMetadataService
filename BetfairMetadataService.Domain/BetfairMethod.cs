@@ -8,7 +8,8 @@ namespace BetfairMetadataService.Domain
         ListEventTypes = 1,
         ListCompetitions = 2,
         ListMarketTypes = 3,
-        ListEvents = 4
+        ListEvents = 4,
+        ListMarketCatalogues = 5
     }
 
     public static class BetfairMethodExtensions
@@ -18,7 +19,8 @@ namespace BetfairMetadataService.Domain
             {BetfairMethod.ListEventTypes, "listEventTypes" },
             {BetfairMethod.ListCompetitions, "listCompetitions" },
             {BetfairMethod.ListEvents, "listEvents" },
-            {BetfairMethod.ListMarketTypes, "listMarketTypes" }
+            {BetfairMethod.ListMarketTypes, "listMarketTypes" },
+            {BetfairMethod.ListMarketCatalogues, "listMarketCatalogue" }
         };
 
         public static string GetMethodName(this BetfairMethod betfairMethod)

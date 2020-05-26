@@ -19,9 +19,9 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<TEntity>> Read(MarketFilter filter)
+        public async Task<IEnumerable<TEntity>> Read(MarketFilter filter, HashSet<MarketProjection> marketProjections = null)
         {
-            IList<TBetfairDto> results = await _requestInvoker.Invoke<IList<TBetfairDto>>(_method, filter);
+            IList<TBetfairDto> results = await _requestInvoker.Invoke<IList<TBetfairDto>>(_method, filter, marketProjections);
             return _mapper.Map<IEnumerable<TEntity>>(results);
         }
     }

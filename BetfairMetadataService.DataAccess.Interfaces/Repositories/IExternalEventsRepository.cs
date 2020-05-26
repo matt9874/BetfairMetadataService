@@ -6,6 +6,6 @@ namespace BetfairMetadataService.DataAccess.Interfaces.Repositories
 {
     public interface IExternalEventsRepository
     {
-        Task<IEnumerable<Event>> GetEventsByCompetitionId(string competitionId);
+        Task<IEnumerable<Event>> GetEventsByCompetitionIdAndMarketType(string competitionId, string marketType);
     }
 }
