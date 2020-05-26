@@ -23,7 +23,12 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
         public async Task<Domain.External.EventType> Read(string id)
         {
             var filter = new MarketFilter() { EventTypeIds = new HashSet<string>() { id } };
-            IList<EventTypeResult> results = await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes, filter);
+            var parameters = new BetfairRequestParameters()
+            {
+                Filter = filter
+            };
+
+            IList<EventTypeResult> results = await _requestInvoker.Invoke<IList<EventTypeResult>>(BetfairMethod.ListEventTypes, parameters);
 
             var eventTypes = _mapper.Map<IEnumerable<Domain.External.EventType>>(results);
             return eventTypes.FirstOrDefault();

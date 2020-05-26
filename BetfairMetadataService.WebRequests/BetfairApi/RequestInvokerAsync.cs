@@ -22,8 +22,6 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
 {
     public class RequestInvokerAsync: IRequestInvokerAsync
     {
-        private const string _maxResults = "1000";
-
         private readonly string _sessionTokenHeader;
         private readonly string _methodPrefix;
         private readonly string _requestContentType;
@@ -59,7 +57,7 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
             _registry = registry;
         }
 
-        public async Task<T> Invoke<T>(BetfairMethod method, MarketFilter marketFilter = null, HashSet<MarketProjection> marketProjections = null)
+        public async Task<T> Invoke<T>(BetfairMethod method, BetfairRequestParameters requestParameters)
         {
             if (method== BetfairMethod.UnknownMethod)
                 throw new ArgumentOutOfRangeException("Method must be defined", "method");
@@ -67,14 +65,14 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
 
             IDictionary<string, object> args = new Dictionary<string, object>()
             {
-                {"filter", marketFilter ?? new MarketFilter() }
+                {"filter", requestParameters.Filter ?? new MarketFilter() }
             };
 
-            if (marketProjections != null && marketProjections.Count > 0)
-            {
-                args["marketProjection"] = marketProjections;
-                args["maxResults"] = _maxResults;
-            }
+            if (requestParameters.MarketProjections != null && requestParameters.MarketProjections.Count > 0)
+                args["marketProjection"] = requestParameters.MarketProjections;
+
+            if (requestParameters.MaxResults != null && requestParameters.MaxResults > 0 && requestParameters.MaxResults <=1000)
+                args["maxResults"] = requestParameters.MaxResults;
 
             LoginResponse loginResponse = await _authenticationClient.Login();
 

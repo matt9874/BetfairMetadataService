@@ -4,6 +4,7 @@ using BetfairMetadataService.DataAccess.Interfaces.WebRequests;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BetfairMetadataService.Domain.BetfairDtos;
+using BetfairMetadataService.Domain;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
 {
@@ -25,7 +26,12 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
                     id
                 }
             };
-            return (await _competitionsReader.Read(filter)).FirstOrDefault();
+            var parameters = new BetfairRequestParameters()
+            {
+                Filter = filter
+            };
+
+            return (await _competitionsReader.Read(parameters)).FirstOrDefault();
         }
         public async Task<IEnumerable<Domain.External.Competition>> GetCompetitions()
         {
@@ -41,7 +47,12 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
                     eventTypeId
                 }
             };
-            return await _competitionsReader.Read(filter);
+            var parameters = new BetfairRequestParameters()
+            {
+                Filter = filter
+            };
+
+            return await _competitionsReader.Read(parameters);
         }
     }
 }

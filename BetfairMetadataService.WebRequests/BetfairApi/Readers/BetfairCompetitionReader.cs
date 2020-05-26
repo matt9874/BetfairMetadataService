@@ -23,7 +23,12 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Readers
         public async Task<Domain.External.Competition> Read(string id)
         {
             var filter = new MarketFilter() { CompetitionIds = new HashSet<string>() { id } };
-            IList<CompetitionResult> results = await _requestInvoker.Invoke<IList<CompetitionResult>>(BetfairMethod.ListCompetitions, filter);
+            var parameters = new BetfairRequestParameters()
+            {
+                Filter = filter
+            };
+
+            IList<CompetitionResult> results = await _requestInvoker.Invoke<IList<CompetitionResult>>(BetfairMethod.ListCompetitions, parameters);
 
             var competitions = _mapper.Map<IEnumerable<Domain.External.Competition>>(results);
             return competitions.FirstOrDefault();

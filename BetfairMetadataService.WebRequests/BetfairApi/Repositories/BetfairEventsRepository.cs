@@ -1,5 +1,6 @@
 ﻿using BetfairMetadataService.DataAccess.Interfaces.Repositories;
 using BetfairMetadataService.DataAccess.Interfaces.WebRequests;
+using BetfairMetadataService.Domain;
 using BetfairMetadataService.Domain.BetfairDtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,7 +29,12 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
                     marketType
                 }
             };
-            return await _eventsReader.Read(filter);
+            var parameters = new BetfairRequestParameters()
+            {
+                Filter = filter
+            };
+
+            return await _eventsReader.Read(parameters);
         }
     }
 }

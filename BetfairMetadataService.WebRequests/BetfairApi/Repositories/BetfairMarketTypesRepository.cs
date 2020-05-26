@@ -5,6 +5,7 @@ using BetfairMetadataService.DataAccess.Interfaces.WebRequests;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using BetfairMetadataService.Domain;
 
 namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
 {
@@ -25,23 +26,31 @@ namespace BetfairMetadataService.WebRequests.BetfairApi.Repositories
 
         public async Task<IEnumerable<MarketType>> GetMarketTypesByCompetitionId(string competitionId)
         {
-            MarketFilter marketFilter = new MarketFilter()
+            MarketFilter filter = new MarketFilter()
             {
                 CompetitionIds = new HashSet<string>() { competitionId }
             };
+            var parameters = new BetfairRequestParameters()
+            {
+                Filter = filter
+            };
 
-            IEnumerable<MarketType> marketTypes = await _betfairBatchReader.Read(marketFilter);
+            IEnumerable<MarketType> marketTypes = await _betfairBatchReader.Read(parameters);
             return marketTypes;
         }
 
         public async Task<IEnumerable<MarketType>> GetMarketTypesByEventTypeId(string eventTypeId)
         {
-            MarketFilter marketFilter = new MarketFilter()
+            MarketFilter filter = new MarketFilter()
             {
                 EventTypeIds = new HashSet<string>() { eventTypeId }
             };
+            var parameters = new BetfairRequestParameters()
+            {
+                Filter = filter
+            };
 
-            IEnumerable<MarketType> marketTypes = await _betfairBatchReader.Read(marketFilter);
+            IEnumerable<MarketType> marketTypes = await _betfairBatchReader.Read(parameters);
             return marketTypes;
         }
     }
