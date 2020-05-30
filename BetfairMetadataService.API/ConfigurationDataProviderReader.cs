@@ -17,12 +17,12 @@ namespace BetfairMetadataService.API
 
         public Task<DataProvider> Read(int id)
         {
-            if (_dataProviderMappings.CurrentValue.Values.TryGetValue(id.ToString(), out string name))
+            if (_dataProviderMappings.CurrentValue.Values.TryGetValue(id.ToString(), out Domain.Internal.DataProvider dataProvider))
             {
                 return Task.FromResult(new DataProvider()
                 {
                     Id = id,
-                    Name = name
+                    Name = dataProvider.Name
                 });
             }
             return Task.FromResult((DataProvider)null);

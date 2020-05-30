@@ -26,7 +26,7 @@ namespace BetfairMetadataService.API
                     dataProviders.Add(new DataProvider()
                     {
                         Id = result,
-                        Name = mapping.Value
+                        Name = mapping.Value.Name
                     });
             }
             return Task.FromResult(dataProviders.AsEnumerable());

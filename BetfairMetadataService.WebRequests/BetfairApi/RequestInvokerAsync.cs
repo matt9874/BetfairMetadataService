@@ -65,14 +65,19 @@ namespace BetfairMetadataService.WebRequests.BetfairApi
 
             IDictionary<string, object> args = new Dictionary<string, object>()
             {
-                {"filter", requestParameters.Filter ?? new MarketFilter() }
+                {"filter", requestParameters?.Filter ?? new MarketFilter() }
             };
 
-            if (requestParameters.MarketProjections != null && requestParameters.MarketProjections.Count > 0)
+            if (requestParameters != null && requestParameters.MarketProjections != null &&
+                requestParameters.MarketProjections.Count > 0)
+            {
                 args["marketProjection"] = requestParameters.MarketProjections;
-
-            if (requestParameters.MaxResults != null && requestParameters.MaxResults > 0 && requestParameters.MaxResults <=1000)
+            }
+            if (requestParameters != null && requestParameters.MaxResults != null 
+                && requestParameters.MaxResults > 0 && requestParameters.MaxResults <=1000)
+            {
                 args["maxResults"] = requestParameters.MaxResults;
+            }
 
             LoginResponse loginResponse = await _authenticationClient.Login();
 

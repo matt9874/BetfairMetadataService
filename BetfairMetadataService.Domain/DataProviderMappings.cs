@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using BetfairMetadataService.Domain.Internal;
+using System.Collections.Generic;
 
 namespace BetfairMetadataService.Domain
 {
     public class DataProviderMappings
     {
-        public Dictionary<string, string> Values { get; set; }
+        public Dictionary<string, DataProvider> Values { get; set; }
     }
 }
