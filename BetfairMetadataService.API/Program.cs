@@ -2,6 +2,8 @@ using BetfairMetadataService.API.Workers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog.Web;
 
 namespace BetfairMetadataService.API
 {
@@ -18,6 +20,11 @@ namespace BetfairMetadataService.API
                 {
                     webBuilder.UseStartup<Startup>();
                 })
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                })
+                .UseNLog()
                 .ConfigureServices(services =>
                 {
                     services.AddHostedService<MetadataFetchWorker>();
