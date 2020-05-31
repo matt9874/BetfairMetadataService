@@ -29,6 +29,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using BetfairMetadataService.API.Workers;
 using BetfairMetadataService.API.WorkerInterfaces;
+using BetfairMetadataService.API.Middleware;
 
 namespace BetfairMetadataService.API
 {
@@ -218,6 +219,8 @@ namespace BetfairMetadataService.API
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseMiddleware<LoggingMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
