@@ -30,6 +30,8 @@ using System.Security.Cryptography.X509Certificates;
 using BetfairMetadataService.API.Workers;
 using BetfairMetadataService.API.WorkerInterfaces;
 using BetfairMetadataService.API.Middleware;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace BetfairMetadataService.API
 {
@@ -193,7 +195,7 @@ namespace BetfairMetadataService.API
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IAsyncCacheProvider cacheProvider,
-            IPolicyRegistry<string> registry)
+            IPolicyRegistry<string> registry, ILogger<Startup> logger)
         {
             PollyPolicyRegistration.GetPolicyRegistry(cacheProvider, registry);
 
@@ -207,7 +209,11 @@ namespace BetfairMetadataService.API
                 {
                     appBuilder.Run(async context =>
                     {
-                        //TO DO: Add logging
+                        var exceptionHandlerPathFeature =
+                            context.Features.Get<IExceptionHandlerPathFeature>();
+                        string errorInformation = GetErrorInformation(context);
+                        logger.LogError(exceptionHandlerPathFeature?.Error, errorInformation);
+
                         context.Response.StatusCode = 500;
                         await context.Response.WriteAsync("An unexpected error happened");
                     });
@@ -226,6 +232,22 @@ namespace BetfairMetadataService.API
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private string GetErrorInformation(HttpContext context)
+        {
+            return $@"
+Error.Unhandled exception. TraceId: { context.TraceIdentifier}. 
+Remote IP address: {context.Connection.RemoteIpAddress.ToString()}
+Local IP address: {context.Connection.LocalIpAddress.ToString()}
+Request:
+    Scheme: {context.Request.Scheme}
+    Host: {context.Request.Host}
+    Path: {context.Request.Path}
+    Query string: {context.Request.QueryString} 
+Response:
+    Status code: {context.Response.StatusCode}
+";
         }
     }
 }
