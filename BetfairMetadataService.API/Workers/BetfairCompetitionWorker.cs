@@ -6,6 +6,7 @@ using System;
 using BetfairMetadataService.Domain.External;
 using BetfairMetadataService.API.WorkerInterfaces;
 using System.Collections.Generic;
+using AutoMapper;
 
 namespace BetfairMetadataService.API.Workers
 {
@@ -17,13 +18,15 @@ namespace BetfairMetadataService.API.Workers
         private readonly Func<int, IExternalEventTypesRepository> _externalEventTypesRepositoryFactory;
         private readonly Func<int, IExternalEventsRepository> _externalEventsRepositoryFactory;
         private readonly Func<int, IExternalMarketsRepository> _externalMarketsRepositoryFactory;
+        private readonly IMapper _mapper;
 
         public BetfairCompetitionWorker(IReader<DataProvider, int> dataProviderReader,
             Func<int, IExternalCompetitionsRepository> competitionsRepositoryFactory,
             Func<int, IExternalMarketTypesRepository> marketTypesRepositoryFactory,
             Func<int, IExternalEventTypesRepository> eventTypesRepositoryFactory,
             Func<int, IExternalEventsRepository> eventsRepositoryFactory,
-            Func<int, IExternalMarketsRepository> externalMarketsRepositoryFactory)
+            Func<int, IExternalMarketsRepository> externalMarketsRepositoryFactory,
+            IMapper mapper)
         {
             _externalDataProviderReader = dataProviderReader;
             _externalCompetitionsRepositoryFactory = competitionsRepositoryFactory;
@@ -31,20 +34,21 @@ namespace BetfairMetadataService.API.Workers
             _externalEventTypesRepositoryFactory = eventTypesRepositoryFactory;
             _externalEventsRepositoryFactory = eventsRepositoryFactory;
             _externalMarketsRepositoryFactory = externalMarketsRepositoryFactory;
+            _mapper = mapper;
         }
 
         public async Task DoWork(CompetitionMarketType competitionMarketType)
         {
-            DataProvider dataProvider = await _externalDataProviderReader.Read(competitionMarketType.DataProviderId);
-            if (dataProvider == null)
+            DataProvider externalDataProvider = await _externalDataProviderReader.Read(competitionMarketType.DataProviderId);
+            if (externalDataProvider == null)
                 throw new Exception($"No data provider found with id of {competitionMarketType.DataProviderId}");
+            Domain.Internal.DataProvider dataProvider = _mapper.Map<Domain.Internal.DataProvider>(externalDataProvider);
             //TODO: check data provider is in DB and insert if it isn't
 
             IExternalCompetitionsRepository competitionsRepository = _externalCompetitionsRepositoryFactory?.Invoke(competitionMarketType.DataProviderId);
-            Competition competition = await competitionsRepository.GetCompetition(competitionMarketType.CompetitionId);
-            if(competition == null)
+            Competition externalCompetition = await competitionsRepository.GetCompetition(competitionMarketType.CompetitionId);
+            if(externalCompetition == null)
                 throw new Exception($"No competition found with id of {competitionMarketType.CompetitionId}");
-            //TODO: check competition is in DB and insert if it isn't
 
             IExternalMarketTypesRepository marketTypesRepository = _externalMarketTypesRepositoryFactory?.Invoke(competitionMarketType.DataProviderId);
             MarketType marketTypeForCompetition = await marketTypesRepository.GetMarketTypeForCompetition(
@@ -52,30 +56,38 @@ namespace BetfairMetadataService.API.Workers
                 competitionMarketType.MarketType);
             if (marketTypeForCompetition == null)
                 throw new Exception($"No {competitionMarketType.MarketType} market type found for competition with id {competitionMarketType.CompetitionId}");
-            //TODO: check competition is in DB and insert if it isn't
-
+            
             IExternalEventTypesRepository eventTypesRepository = _externalEventTypesRepositoryFactory?.Invoke(competitionMarketType.DataProviderId);
-            EventType eventType = await eventTypesRepository.GetEventTypeForCompetition(competitionMarketType.CompetitionId);
-            if (eventType != null)
+            EventType externalEventType = await eventTypesRepository.GetEventTypeForCompetition(competitionMarketType.CompetitionId);
+            if (externalEventType != null)
             {
+                Domain.Internal.EventType eventType = _mapper.Map<Domain.Internal.EventType>(externalEventType);
                 //Upsert eventType
             }
+
+            Domain.Internal.Competition competition = _mapper.Map<Domain.Internal.Competition>(externalCompetition);
+            //TODO: check competition is in DB and insert if it isn't
 
             IExternalEventsRepository eventsRepository = _externalEventsRepositoryFactory?.Invoke(competitionMarketType.DataProviderId);
             IEnumerable<Event> events = await eventsRepository.GetEventsByCompetitionIdAndMarketType(
                 competitionMarketType.CompetitionId, 
                 competitionMarketType.MarketType);
-            foreach (var ev in events ?? new Event[0])
+            foreach (var externalEvent in events ?? new Event[0])
             {
+                Domain.Internal.Event internalEvent = _mapper.Map<Domain.Internal.Event>(externalEvent);
                 //Upsert event
                 IExternalMarketsRepository marketsRepository = _externalMarketsRepositoryFactory?.Invoke(competitionMarketType.DataProviderId);
-                Market market = await marketsRepository.GetMarketForEventAndMarketType(
-                    ev.Id,
+                Market externalMarket = await marketsRepository.GetMarketForEventAndMarketType(
+                    externalEvent.Id,
                     competitionMarketType.MarketType);
+                Domain.Internal.Market market = _mapper.Map<Domain.Internal.Market>(externalMarket);
                 //if not  null
                 //    Upsert market
+                foreach (var externalRunner in externalMarket.Runners)
+                {
+                    Domain.Internal.Selection selection = _mapper.Map<Domain.Internal.Selection>(externalRunner);
+                }
             }
         }
-
     }
 }

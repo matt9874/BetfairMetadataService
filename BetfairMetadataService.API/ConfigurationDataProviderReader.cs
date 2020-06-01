@@ -22,7 +22,8 @@ namespace BetfairMetadataService.API
                 return Task.FromResult(new DataProvider()
                 {
                     Id = id,
-                    Name = dataProvider.Name
+                    Name = dataProvider.Name,
+                    Code = dataProvider.Code
                 });
             }
             return Task.FromResult((DataProvider)null);

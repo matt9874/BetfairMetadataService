@@ -12,5 +12,6 @@ namespace BetfairMetadataService.Domain.Internal
         public string Venue { get; set; }
         public DateTime? OpenDate { get; set; }
         ICollection<Market> Markets { get; set; }
+        public string CompetitionId { get; set; }
     }
 }

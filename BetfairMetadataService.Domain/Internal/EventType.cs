@@ -7,6 +7,5 @@ namespace BetfairMetadataService.Domain.Internal
         public string Id { get; set; }
         public string Name { get; set; }
         ICollection<Competition> Competitions { get; set; }
-        ICollection<Event> Events { get; set; }
     }
 }
