@@ -177,14 +177,18 @@ namespace BetfairMetadataService.API
             services.AddScoped<IDeleter<EventTypeMarketType>, EventTypeMarketTypeFetchRootDeleter>();
             services.AddScoped<ISaver<EventTypeMarketType>, EventTypeMarketTypeFetchRootSaver>();
             services.AddScoped<IReader<EventTypeMarketType, Tuple<int,string,string>>, EventTypeMarketTypeFetchRootReader>();
-            services.AddScoped<IBatchReader<EventTypeMarketType>, EventTypeMarketTypeFetchRootBatchReader>();
 
             services.AddScoped<IDeleter<CompetitionMarketType>, CompetitionMarketTypeFetchRootDeleter>();
             services.AddScoped<ISaver<CompetitionMarketType>, CompetitionMarketTypeFetchRootSaver>();
             services.AddScoped<IReader<CompetitionMarketType, Tuple<int, string, string>>, CompetitionMarketTypeFetchRootReader>();
-            services.AddScoped<IBatchReader<CompetitionMarketType>, CompetitionMarketTypeFetchRootBatchReader>();
 
             services.AddScoped<IEntityUpserter, EntityUpserter>();
+            services.AddScoped(typeof(IBatchReader<>), typeof(BatchReader<>));
+            services.AddScoped<IReader<Domain.Internal.EventType,string>, Reader<Domain.Internal.EventType>>();
+            services.AddScoped<IReader<Domain.Internal.Competition, string>, Reader<Domain.Internal.Competition>>();
+            services.AddScoped<IReader<Domain.Internal.Event, string>, Reader<Domain.Internal.Event>>();
+            services.AddScoped<IReader<Domain.Internal.Market, string>, Reader<Domain.Internal.Market>>();
+            services.AddScoped<IReader<Domain.Internal.Selection, string>, Reader<Domain.Internal.Selection>>();
 
             services.AddScoped<BetfairCompetitionsWorker>();
             services.AddScoped<IWorker>(sp => new CompositeWorker(
