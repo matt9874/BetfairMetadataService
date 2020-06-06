@@ -4,14 +4,16 @@ using BetfairMetadataService.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BetfairMetadataService.SqlServer.Migrations
 {
     [DbContext(typeof(BetfairMetadataServiceContext))]
-    partial class BetfairMetadataServiceContextModelSnapshot : ModelSnapshot
+    [Migration("20200606153828_internalEntities")]
+    partial class internalEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

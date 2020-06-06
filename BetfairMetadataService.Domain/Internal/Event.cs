@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace BetfairMetadataService.Domain.Internal
 {
-    public class Event
+    public class Event : BaseEntity
     {
-        public string Id { get; set; }
         public string Name { get; set; }
         public string CountryCode { get; set; }
         public string Timezone { get; set; }

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace BetfairMetadataService.Domain.Internal
 {
-    public class Market
+    public class Market : BaseEntity
     {
-        public string Id { get; set; }
         public string MarketName { get; set; }
         public bool? MarketDataDelayed { get; set; }
         public ICollection<Selection> Runners { get; set; }
+        public Event Event { get; set; }
         public string EventId { get; set; }
         public bool? PersistenceEnabled { get; set; }
         public bool? BspMarket { get; set; }

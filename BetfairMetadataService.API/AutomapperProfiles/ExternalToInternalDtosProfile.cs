@@ -7,7 +7,8 @@ namespace BetfairMetadataService.API.AutomapperProfiles
     {
         public ExternalToInternalDtosProfile()
         {
-            CreateMap<DataProvider, Domain.Internal.DataProvider>();
+            CreateMap<DataProvider, Domain.Internal.DataProvider>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(dp => dp.Id.ToString()));
             CreateMap<EventType, Domain.Internal.EventType>();
             CreateMap<Competition, Domain.Internal.Competition>();
             CreateMap<Event, Domain.Internal.Event>();

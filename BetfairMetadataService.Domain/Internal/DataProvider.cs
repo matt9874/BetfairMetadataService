@@ -1,8 +1,7 @@
 ﻿namespace BetfairMetadataService.Domain.Internal
 {
-    public class DataProvider
+    public class DataProvider : BaseEntity
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public string Code { get; set; }
     }
