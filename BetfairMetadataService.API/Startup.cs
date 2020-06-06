@@ -184,6 +184,8 @@ namespace BetfairMetadataService.API
             services.AddScoped<IReader<CompetitionMarketType, Tuple<int, string, string>>, CompetitionMarketTypeFetchRootReader>();
             services.AddScoped<IBatchReader<CompetitionMarketType>, CompetitionMarketTypeFetchRootBatchReader>();
 
+            services.AddScoped<IEntityUpserter, EntityUpserter>();
+
             services.AddScoped<BetfairCompetitionsWorker>();
             services.AddScoped<IWorker>(sp => new CompositeWorker(
                 new IWorker[]
