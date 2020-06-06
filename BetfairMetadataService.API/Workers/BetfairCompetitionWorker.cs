@@ -69,8 +69,11 @@ namespace BetfairMetadataService.API.Workers
             }
 
             Domain.Internal.Competition competition = _mapper.Map<Domain.Internal.Competition>(externalCompetition);
-            await _upserter.Upsert(competition);
-
+            if (competition != null)
+            {
+                competition.EventTypeId = externalEventType?.Id;
+                await _upserter.Upsert(competition);
+            }
             IExternalEventsRepository eventsRepository = _externalEventsRepositoryFactory?.Invoke(competitionMarketType.DataProviderId);
             IEnumerable<Event> events = await eventsRepository.GetEventsByCompetitionIdAndMarketType(
                 competitionMarketType.CompetitionId, 
@@ -78,8 +81,11 @@ namespace BetfairMetadataService.API.Workers
             foreach (var externalEvent in events ?? new Event[0])
             {
                 Domain.Internal.Event internalEvent = _mapper.Map<Domain.Internal.Event>(externalEvent);
-                if(internalEvent!= null)
+                if (internalEvent != null)
+                {
+                    internalEvent.CompetitionId = competition?.Id;
                     await _upserter.Upsert(internalEvent);
+                }
 
                 IExternalMarketsRepository marketsRepository = _externalMarketsRepositoryFactory?.Invoke(competitionMarketType.DataProviderId);
                 Market externalMarket = await marketsRepository.GetMarketForEventAndMarketType(
@@ -87,12 +93,18 @@ namespace BetfairMetadataService.API.Workers
                     competitionMarketType.MarketType);
                 Domain.Internal.Market market = _mapper.Map<Domain.Internal.Market>(externalMarket);
                 if (market != null)
+                {
+                    market.EventId = internalEvent?.Id;
                     await _upserter.Upsert(market);
-
+                }
                 foreach (var externalRunner in externalMarket.Runners)
                 {
                     Domain.Internal.Selection selection = _mapper.Map<Domain.Internal.Selection>(externalRunner);
-                    await _upserter.Upsert(selection);
+                    if (selection != null)
+                    {
+                        selection.MarketId = market?.Id;
+                        await _upserter.Upsert(selection);
+                    }
                 }
             }
         }
