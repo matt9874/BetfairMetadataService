@@ -47,11 +47,11 @@ namespace BetfairMetadataService.API.Controllers
             if (competition == null)
                 return NotFound($"Unable to find competition with id {competitionId}");
 
-            IExternalMarketTypesRepository marketTypesService = _marketTypesRepositoryFactory?.Invoke(dataProviderId);
-            IEnumerable<MarketType> marketTypes = await marketTypesService.GetMarketTypesByCompetitionId(competitionId);
+            IExternalMarketTypesRepository marketTypesRepository = _marketTypesRepositoryFactory?.Invoke(dataProviderId);
+            IEnumerable<MarketType> marketTypes = await marketTypesRepository.GetMarketTypesByCompetitionId(competitionId);
 
             if (marketTypes == null)
-                throw new Exception($"IMarketTypesService.GetMarketTypesByCompetitionId({competitionId}) returned null IEnumerable<MarketType>");
+                throw new Exception($"Repository (competition: {competitionId}) returned null IEnumerable<MarketType>");
 
             return Ok(marketTypes);
         }
@@ -73,7 +73,7 @@ namespace BetfairMetadataService.API.Controllers
             IEnumerable<MarketType> marketTypes = await marketTypesRepository.GetMarketTypesByEventTypeId(eventTypeId);
 
             if (marketTypes == null)
-                throw new Exception($"IMarketTypesService.GetMarketTypesByEventTypeId({eventTypeId}) returned null IEnumerable<MarketType>");
+                throw new Exception($"Repository (eventType: {eventTypeId}) returned null IEnumerable<MarketType>");
 
             return Ok(marketTypes);
         }

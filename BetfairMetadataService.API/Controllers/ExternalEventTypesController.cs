@@ -29,7 +29,7 @@ namespace BetfairMetadataService.API.Controllers
 
             IEnumerable<EventType> eventTypes = await repository.GetEventTypes();
             if (eventTypes == null)
-                throw new Exception("IBatchReader<EventType> returned null IEnumerable");
+                throw new Exception("Repository returned null IEnumerable");
 
             return Ok(eventTypes);
         }
