@@ -23,18 +23,18 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("dataProviders/{dataProviderId}/competitions")]
+        [ThrowOnNullCollectionResultFilter]
         [ExternalCompetitionsResultFilter]
         public async Task<IActionResult> GetCompetitions(int dataProviderId)
         {
             IExternalCompetitionsRepository repository = _competitionsRepositoryFactory?.Invoke(dataProviderId);
             IEnumerable<Competition> competitions = await repository.GetCompetitions();
-            if (competitions == null)
-                throw new Exception("Repository returned null IEnumerable");
 
             return Ok(competitions);
         }
 
         [HttpGet("dataProviders/{dataProviderId}/eventTypes/{eventTypeId}/competitions")]
+        [ThrowOnNullCollectionResultFilter]
         [ExternalCompetitionsResultFilter]
         public async Task<IActionResult> GetCompetitionsByEventType(int dataProviderId, string eventTypeId)
         {
@@ -48,9 +48,7 @@ namespace BetfairMetadataService.API.Controllers
 
             IExternalCompetitionsRepository competitionsRepository = _competitionsRepositoryFactory?.Invoke(dataProviderId);
             IEnumerable<Competition> competitions = await competitionsRepository.GetCompetitionsByEventType(eventTypeId);
-            if (competitions == null)
-                throw new Exception("Repository returned null IEnumerable");
-
+            
             return Ok(competitions);
         }
 

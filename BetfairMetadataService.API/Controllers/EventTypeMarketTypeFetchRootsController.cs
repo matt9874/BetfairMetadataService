@@ -113,6 +113,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet]
+        [ThrowOnNullCollectionResultFilter]
         [EventTypeMarketTypesResultFilter]
         public async Task<IActionResult> GetEventTypeMarketTypeFetchRoots(int dataProviderId)
         {
@@ -122,13 +123,11 @@ namespace BetfairMetadataService.API.Controllers
 
             IEnumerable<EventTypeMarketType> eventTypeMarketTypes = await _eventTypeMarketTypeBatchReader.Read(etmt => etmt.DataProviderId == dataProviderId);
 
-            if (eventTypeMarketTypes == null)
-                return StatusCode(500);
-
             return Ok(eventTypeMarketTypes);
         }
 
         [HttpGet("{eventTypeId}/marketTypes")]
+        [ThrowOnNullCollectionResultFilter]
         [EventTypeMarketTypesResultFilter]
         public async Task<IActionResult> GetEventTypeMarketTypeFetchRootsForEventType(int dataProviderId, string eventTypeId)
         {
@@ -138,9 +137,6 @@ namespace BetfairMetadataService.API.Controllers
             
             IEnumerable<EventTypeMarketType> eventTypeMarketTypes = await _eventTypeMarketTypeBatchReader.Read(etmt => 
                 etmt.DataProviderId == dataProviderId && etmt.EventTypeId == eventTypeId);
-
-            if (eventTypeMarketTypes == null)
-                return StatusCode(500);
 
             return Ok(eventTypeMarketTypes);
         }

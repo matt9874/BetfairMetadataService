@@ -22,17 +22,16 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("events")]
+        [ThrowOnNullCollectionResultFilter]
         [InternalEventsResultFilter]
         public async Task<IActionResult> GetEvents()
         {
             IEnumerable<Event> events = await _batchReader.Read(e => true);
-            if (events == null)
-                throw new Exception("IBatchReader<Event> returned null IEnumerable");
-
             return Ok(events);
         }
 
         [HttpGet("competitions/{competitionId}/events")]
+        [ThrowOnNullCollectionResultFilter]
         [InternalEventsResultFilter]
         public async Task<IActionResult> GetEventsByCompetitionId(string competitionId)
         {
@@ -41,9 +40,6 @@ namespace BetfairMetadataService.API.Controllers
                 return NotFound($"Could not find Competition with id of {competitionId}");
 
             IEnumerable<Event> events = await _batchReader.Read(e => e.CompetitionId == competitionId);
-            if (events == null)
-                throw new Exception("IBatchReader<Event> returned null IEnumerable");
-
             return Ok(events);
         }
     }

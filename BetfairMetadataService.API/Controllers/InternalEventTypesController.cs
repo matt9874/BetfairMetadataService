@@ -20,13 +20,11 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("eventTypes")]
+        [ThrowOnNullCollectionResultFilter]
         [InternalEventTypesResultFilter]
         public async Task<IActionResult> GetEventTypes()
         {
             IEnumerable<EventType> eventTypes = await _batchReader.Read(et => true);
-            if (eventTypes == null)
-                throw new Exception("IBatchReader<EventType> returned null IEnumerable");
-
             return Ok(eventTypes);
         }
     }

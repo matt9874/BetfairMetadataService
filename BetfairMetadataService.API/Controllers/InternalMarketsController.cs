@@ -22,17 +22,16 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("markets")]
+        [ThrowOnNullCollectionResultFilter]
         [InternalMarketsResultFilter]
         public async Task<IActionResult> GetMarkets()
         {
             IEnumerable<Market> markets = await _batchReader.Read(e => true);
-            if (markets == null)
-                throw new Exception("IBatchReader<Market> returned null IEnumerable");
-
             return Ok(markets);
         }
 
         [HttpGet("events/{eventId}/markets")]
+        [ThrowOnNullCollectionResultFilter]
         [InternalMarketsResultFilter]
         public async Task<IActionResult> GetMarketsByEventId(string eventId)
         {
@@ -41,9 +40,6 @@ namespace BetfairMetadataService.API.Controllers
                 return NotFound($"Could not find Event with id of {eventId}");
 
             IEnumerable<Market> markets = await _batchReader.Read(e => e.EventId == eventId);
-            if (markets == null)
-                throw new Exception("IBatchReader<Market> returned null IEnumerable");
-
             return Ok(markets);
         }
     }

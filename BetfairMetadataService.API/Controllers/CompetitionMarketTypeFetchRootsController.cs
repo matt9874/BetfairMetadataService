@@ -113,6 +113,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet]
+        [ThrowOnNullCollectionResultFilter]
         [CompetitionMarketTypesResultFilter]
         public async Task<IActionResult> GetCompetitionMarketTypeFetchRoots(int dataProviderId)
         {
@@ -120,15 +121,13 @@ namespace BetfairMetadataService.API.Controllers
             if (dataProvider == null)
                 return NotFound($"Unable to find dataProvider with id {dataProviderId}");
 
-            IEnumerable<CompetitionMarketType> competitionMarketTypes = await _competitionMarketTypeBatchReader.Read(etmt => etmt.DataProviderId == dataProviderId);
-
-            if (competitionMarketTypes == null)
-                return StatusCode(500);
+            IEnumerable<CompetitionMarketType> competitionMarketTypes = await _competitionMarketTypeBatchReader.Read(cmt => cmt.DataProviderId == dataProviderId);
 
             return Ok(competitionMarketTypes);
         }
 
         [HttpGet("{competitionId}/marketTypes")]
+        [ThrowOnNullCollectionResultFilter]
         [CompetitionMarketTypesResultFilter]
         public async Task<IActionResult> GetCompetitionMarketTypeFetchRootsForCompetition(int dataProviderId, string competitionId)
         {
@@ -136,11 +135,8 @@ namespace BetfairMetadataService.API.Controllers
             if (dataProvider == null)
                 return NotFound($"Unable to find dataProvider with id {dataProviderId}");
 
-            IEnumerable<CompetitionMarketType> competitionMarketTypes = await _competitionMarketTypeBatchReader.Read(etmt =>
-                etmt.DataProviderId == dataProviderId && etmt.CompetitionId == competitionId);
-
-            if (competitionMarketTypes == null)
-                return StatusCode(500);
+            IEnumerable<CompetitionMarketType> competitionMarketTypes = await _competitionMarketTypeBatchReader.Read(cmt =>
+                cmt.DataProviderId == dataProviderId && cmt.CompetitionId == competitionId);
 
             return Ok(competitionMarketTypes);
         }

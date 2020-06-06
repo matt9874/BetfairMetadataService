@@ -22,17 +22,16 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("selections")]
+        [ThrowOnNullCollectionResultFilter]
         [InternalSelectionsResultFilter]
         public async Task<IActionResult> GetSelections()
         {
             IEnumerable<Selection> selections = await _batchReader.Read(s => true);
-            if (selections == null)
-                throw new Exception("IBatchReader<Selection> returned null IEnumerable");
-
             return Ok(selections);
         }
 
         [HttpGet("markets/{marketId}/selections")]
+        [ThrowOnNullCollectionResultFilter]
         [InternalSelectionsResultFilter]
         public async Task<IActionResult> GetSelectionsByMarketId(string marketId)
         {
@@ -41,9 +40,6 @@ namespace BetfairMetadataService.API.Controllers
                 return NotFound($"Could not find Market with id of {marketId}");
 
             IEnumerable<Selection> selections = await _batchReader.Read(e => e.MarketId == marketId);
-            if (selections == null)
-                throw new Exception("IBatchReader<Selection> returned null IEnumerable");
-
             return Ok(selections);
         }
     }

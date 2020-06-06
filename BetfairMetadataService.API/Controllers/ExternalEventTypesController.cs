@@ -20,6 +20,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("dataProviders/{dataProviderId}/eventTypes")]
+        [ThrowOnNullCollectionResultFilter]
         [ExternalEventTypesResultFilter]
         public async Task<IActionResult> GetEventTypes(int dataProviderId)
         {
@@ -28,8 +29,6 @@ namespace BetfairMetadataService.API.Controllers
                 return NotFound($"Unable to find data provider with id of {dataProviderId}");
 
             IEnumerable<EventType> eventTypes = await repository.GetEventTypes();
-            if (eventTypes == null)
-                throw new Exception("Repository returned null IEnumerable");
 
             return Ok(eventTypes);
         }

@@ -23,12 +23,11 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("dataProviders")]
+        [ThrowOnNullCollectionResultFilter]
         [ExternalDataProvidersResultFilter]
         public async Task<IActionResult> GetDataProviders()
         {
             IEnumerable<DataProvider> dataProviders = await _batchDataProviderReader.Read(dp => true);
-            if (dataProviders == null)
-                throw new Exception("IBatchReader<DataProvider> returned null");
 
             return Ok(dataProviders);
         }

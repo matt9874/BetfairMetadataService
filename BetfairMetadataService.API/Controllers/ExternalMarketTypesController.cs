@@ -30,6 +30,7 @@ namespace BetfairMetadataService.API.Controllers
         }
 
         [HttpGet("dataProviders/{dataProviderId}/eventTypes/{eventTypeId}/competitions/{competitionId}/marketTypes")]
+        [ThrowOnNullCollectionResultFilter]
         [ExternalMarketTypesResultFilterAttribute]
         public async Task<IActionResult> GetMarketTypesByCompetition(int dataProviderId, string eventTypeId, string competitionId)
         {
@@ -50,14 +51,12 @@ namespace BetfairMetadataService.API.Controllers
             IExternalMarketTypesRepository marketTypesRepository = _marketTypesRepositoryFactory?.Invoke(dataProviderId);
             IEnumerable<MarketType> marketTypes = await marketTypesRepository.GetMarketTypesByCompetitionId(competitionId);
 
-            if (marketTypes == null)
-                throw new Exception($"Repository (competition: {competitionId}) returned null IEnumerable<MarketType>");
-
             return Ok(marketTypes);
         }
 
         [HttpGet("dataProviders/{dataProviderId}/eventTypes/{eventTypeId}/marketTypes")]
-        [ExternalMarketTypesResultFilterAttribute]
+        [ThrowOnNullCollectionResultFilter]
+        [ExternalMarketTypesResultFilter]
         public async Task<IActionResult> GetMarketTypesByEventType(int dataProviderId, string eventTypeId)
         {
             DataProvider dataProvider = await _dataProviderReader.Read(dataProviderId);
@@ -71,9 +70,6 @@ namespace BetfairMetadataService.API.Controllers
 
             IExternalMarketTypesRepository marketTypesRepository = _marketTypesRepositoryFactory?.Invoke(dataProviderId);
             IEnumerable<MarketType> marketTypes = await marketTypesRepository.GetMarketTypesByEventTypeId(eventTypeId);
-
-            if (marketTypes == null)
-                throw new Exception($"Repository (eventType: {eventTypeId}) returned null IEnumerable<MarketType>");
 
             return Ok(marketTypes);
         }
