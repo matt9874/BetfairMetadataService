@@ -1,10 +1,13 @@
 ﻿using BetfairMetadataService.API.Filters;
+using BetfairMetadataService.API.ResourceParameters.Internal;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.Internal;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
+using BetfairMetadataService.Domain.Common.Extensions;
 
 namespace BetfairMetadataService.API.Controllers
 {
@@ -24,23 +27,43 @@ namespace BetfairMetadataService.API.Controllers
         [HttpGet("events")]
         [ThrowOnNullCollectionResultFilter]
         [InternalEventsResultFilter]
-        public async Task<IActionResult> GetEvents()
+        public async Task<IActionResult> GetEvents([FromQuery] EventResourceParameters eventResourceParameters)
         {
-            IEnumerable<Event> events = await _batchReader.Read(e => true);
+            Func<Event, bool> filter = GetFilter(eventResourceParameters);
+
+            IEnumerable<Event> events = await _batchReader.Read(filter);
             return Ok(events);
         }
 
         [HttpGet("competitions/{competitionId}/events")]
         [ThrowOnNullCollectionResultFilter]
         [InternalEventsResultFilter]
-        public async Task<IActionResult> GetEventsByCompetitionId(string competitionId)
+        public async Task<IActionResult> GetEventsByCompetitionId(string competitionId, [FromQuery] EventResourceParameters eventResourceParameters)
         {
             Competition competition = await _competitionReader.Read(competitionId);
             if (competition == null)
                 return NotFound($"Could not find Competition with id of {competitionId}");
 
-            IEnumerable<Event> events = await _batchReader.Read(e => e.CompetitionId == competitionId);
+            Func<Event, bool> filter = GetFilter(eventResourceParameters);
+            IEnumerable<Event> events = await _batchReader.Read(e => filter(e) && e.CompetitionId == competitionId);
             return Ok(events);
+        }
+
+        private static Func<Event, bool> GetFilter(EventResourceParameters eventResourceParameters)
+        {
+            Expression<Func<Event, bool>> filterExpression = e => true;
+            if (eventResourceParameters.FromDate != null)
+            {
+                Expression<Func<Event, bool>> fromFilterExpression = e => e.OpenDate >= eventResourceParameters.FromDate;
+                filterExpression = filterExpression.And(fromFilterExpression);
+            }
+            if (eventResourceParameters.ToDate != null)
+            {
+                Expression<Func<Event, bool>> toFilterExpression = e => e.OpenDate <= eventResourceParameters.ToDate;
+                filterExpression = filterExpression.And(toFilterExpression);
+            }
+            return filterExpression.Compile();
+
         }
     }
 }

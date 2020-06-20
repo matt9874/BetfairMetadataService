@@ -1,5 +1,4 @@
 ﻿using BetfairMetadataService.DataAccess.Interfaces;
-using BetfairMetadataService.Domain.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
