@@ -35,15 +35,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetEventTypes_RepositoryReturnsNull_ThrowsException()
-        {
-            _eventTypesRepository.Setup(r => r.GetEventTypes())
-                .ReturnsAsync((IEnumerable<EventType>)null);
-
-            await Assert.ThrowsExceptionAsync<Exception>(async () => await _controller.GetEventTypes(1));
-        }
-
-        [TestMethod]
         public async Task GetEventTypes_RepositoryReturnsEmpty_ReturnsOk()
         {
             _eventTypesRepository.Setup(r => r.GetEventTypes())

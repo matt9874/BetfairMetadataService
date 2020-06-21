@@ -38,15 +38,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetCompetitions_RepositoryReturnsNull_ThrowsException()
-        {
-            _competitionsRepository.Setup(r => r.GetCompetitions())
-                .ReturnsAsync((IEnumerable<Competition>)null);
-
-            await Assert.ThrowsExceptionAsync<Exception>(async () => await _controller.GetCompetitions(1));
-        }
-
-        [TestMethod]
         public async Task GetCompetitions_RepositoryReturnsEmpty_ReturnsOk()
         {
             _competitionsRepository.Setup(r => r.GetCompetitions())

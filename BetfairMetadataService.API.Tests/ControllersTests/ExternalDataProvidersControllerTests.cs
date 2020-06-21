@@ -40,15 +40,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetDataProviders_BatchReaderReturnsNull_ThrowsException()
-        {
-            _mockBatchDataProviderReader.Setup(r => r.Read(It.IsAny<Func<DataProvider, bool>>()))
-                .ReturnsAsync((IEnumerable<DataProvider>)null);
-
-            await Assert.ThrowsExceptionAsync<Exception>(async () => await _controller.GetDataProviders());
-        }
-
-        [TestMethod]
         public async Task GetDataProviders_BatchReaderReturnsEmpty_ReturnsOk()
         {
             _mockBatchDataProviderReader.Setup(r => r.Read(It.IsAny<Func<DataProvider, bool>>()))

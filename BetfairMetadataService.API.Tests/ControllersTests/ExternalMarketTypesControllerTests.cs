@@ -53,16 +53,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
         }
 
         [TestMethod]
-        public async Task GetMarketTypesByCompetitionId_RepositoryReturnsNull_ThrowsException()
-        {
-            SetupNonNullParentObjects();
-            _mockMarketTypesRepository.Setup(r => r.GetMarketTypesByCompetitionId(It.IsAny<string>()))
-                .ReturnsAsync((IEnumerable<MarketType>)null);
-
-            await Assert.ThrowsExceptionAsync<Exception>(async () => await _controller.GetMarketTypesByCompetition(1, "1", "1"));
-        }
-
-        [TestMethod]
         public async Task GetMarketTypesByCompetitionId_RepositoryReturnsEmpty_ReturnsOk()
         {
             SetupNonNullParentObjects();
@@ -140,16 +130,6 @@ namespace BetfairMetadataService.API.Tests.ControllersTests
                 .ThrowsAsync(new ArgumentException());
 
             await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await _controller.GetMarketTypesByEventType(1, "1"));
-        }
-
-        [TestMethod]
-        public async Task GetMarketTypesByEventTypeId_RepositoryReturnsNull_ThrowsException()
-        {
-            SetupNonNullParentObjects();
-            _mockMarketTypesRepository.Setup(r => r.GetMarketTypesByEventTypeId(It.IsAny<string>()))
-                .ReturnsAsync((IEnumerable<MarketType>)null);
-
-            await Assert.ThrowsExceptionAsync<Exception>(async () => await _controller.GetMarketTypesByEventType(1, "1"));
         }
 
         [TestMethod]
