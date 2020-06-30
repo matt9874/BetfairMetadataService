@@ -1,8 +1,8 @@
 ﻿using BetfairMetadataService.API.Filters;
+using BetfairMetadataService.API.Filters.LinkAddingResultFilters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.Internal;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,9 +19,10 @@ namespace BetfairMetadataService.API.Controllers
             _batchReader = batchReader;
         }
 
-        [HttpGet("eventTypes")]
+        [HttpGet("eventTypes", Name = "GetEventTypes")]
         [ThrowOnNullCollectionResultFilter]
         [InternalEventTypesResultFilter]
+        [EventTypesLinksResultFilter]
         public async Task<IActionResult> GetEventTypes()
         {
             IEnumerable<EventType> eventTypes = await _batchReader.Read(et => true);

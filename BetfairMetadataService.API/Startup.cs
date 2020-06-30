@@ -32,6 +32,9 @@ using BetfairMetadataService.API.WorkerInterfaces;
 using BetfairMetadataService.API.Middleware;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Diagnostics;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Newtonsoft.Json;
 
 namespace BetfairMetadataService.API
 {
@@ -50,7 +53,8 @@ namespace BetfairMetadataService.API
             services.AddControllers(setupAction=>
             {
                 setupAction.ReturnHttpNotAcceptable = true;
-            }).AddXmlDataContractSerializerFormatters()
+            }).AddNewtonsoftJson()
+            .AddXmlDataContractSerializerFormatters()
             .ConfigureApiBehaviorOptions(options => 
             {
                 options.InvalidModelStateResponseFactory = context =>
@@ -80,6 +84,15 @@ namespace BetfairMetadataService.API
                         ContentTypes = { "application/problem+json" }
                     };
                 };
+            });
+
+            services.Configure<MvcOptions>(config =>
+            {
+                var jsonFormatter = (NewtonsoftJsonOutputFormatter)(config.OutputFormatters.FirstOrDefault(of => of.GetType() == typeof(NewtonsoftJsonOutputFormatter)));
+                if(jsonFormatter!=null)
+                {
+                    jsonFormatter.SupportedMediaTypes.Add("application/vnd.marvin.hateoas+json");
+                }
             });
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

@@ -1,4 +1,5 @@
 ﻿using BetfairMetadataService.API.Filters;
+using BetfairMetadataService.API.Filters.LinkAddingResultFilters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.Internal;
 using Microsoft.AspNetCore.Mvc;
@@ -30,9 +31,10 @@ namespace BetfairMetadataService.API.Controllers
             return Ok(competitions);
         }
 
-        [HttpGet("eventTypes/{eventTypeId}/competitions")]
+        [HttpGet("eventTypes/{eventTypeId}/competitions", Name = "GetCompetitionsByEventType")]
         [ThrowOnNullCollectionResultFilter]
         [InternalCompetitionsResultFilter]
+        [CompetitionsLinksResultFilter]
         public async Task<IActionResult> GetCompetitionsByEventTypeId(string eventTypeId)
         {
             EventType eventType = await _eventTypeReader.Read(eventTypeId);

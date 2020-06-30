@@ -2,7 +2,7 @@
 
 namespace BetfairMetadataService.API.Models.Internal
 {
-    public class EventDto
+    public class EventDto: LinkResourceBaseDto
     {
         public string Id { get; set; }
         public string Name { get; set; }

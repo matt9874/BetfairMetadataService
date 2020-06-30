@@ -1,4 +1,5 @@
 ﻿using BetfairMetadataService.API.Filters;
+using BetfairMetadataService.API.Filters.LinkAddingResultFilters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.Internal;
 using Microsoft.AspNetCore.Mvc;
@@ -30,9 +31,10 @@ namespace BetfairMetadataService.API.Controllers
             return Ok(selections);
         }
 
-        [HttpGet("markets/{marketId}/selections")]
+        [HttpGet("markets/{marketId}/selections", Name = "GetSelectionsByMarket")]
         [ThrowOnNullCollectionResultFilter]
         [InternalSelectionsResultFilter]
+        [SelectionsLinksResultFilter]
         public async Task<IActionResult> GetSelectionsByMarketId(string marketId)
         {
             Market market = await _marketReader.Read(marketId);

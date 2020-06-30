@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using BetfairMetadataService.Domain.Common.Extensions;
+using BetfairMetadataService.API.Filters.LinkAddingResultFilters;
 
 namespace BetfairMetadataService.API.Controllers
 {
@@ -35,9 +36,10 @@ namespace BetfairMetadataService.API.Controllers
             return Ok(events);
         }
 
-        [HttpGet("competitions/{competitionId}/events")]
+        [HttpGet("competitions/{competitionId}/events", Name = "GetEventsByCompetition")]
         [ThrowOnNullCollectionResultFilter]
         [InternalEventsResultFilter]
+        [EventsLinksResultFilter]
         public async Task<IActionResult> GetEventsByCompetitionId(string competitionId, [FromQuery] EventResourceParameters eventResourceParameters)
         {
             Competition competition = await _competitionReader.Read(competitionId);

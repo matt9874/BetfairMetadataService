@@ -1,8 +1,8 @@
 ﻿using BetfairMetadataService.API.Filters;
+using BetfairMetadataService.API.Filters.LinkAddingResultFilters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.Internal;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,9 +30,10 @@ namespace BetfairMetadataService.API.Controllers
             return Ok(markets);
         }
 
-        [HttpGet("events/{eventId}/markets")]
+        [HttpGet("events/{eventId}/markets", Name = "GetMarketsByEvent")]
         [ThrowOnNullCollectionResultFilter]
         [InternalMarketsResultFilter]
+        [MarketsLinksResultFilter]
         public async Task<IActionResult> GetMarketsByEventId(string eventId)
         {
             Event evt = await _eventReader.Read(eventId);

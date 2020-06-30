@@ -1,6 +1,6 @@
 ﻿namespace BetfairMetadataService.API.Models.Internal
 {
-    public class SelectionDto
+    public class SelectionDto : LinkResourceBaseDto
     {
         public string Id { get; set; }
         public string MarketId { get; set; }
