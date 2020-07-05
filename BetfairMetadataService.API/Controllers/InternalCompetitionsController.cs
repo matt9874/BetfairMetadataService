@@ -3,7 +3,6 @@ using BetfairMetadataService.API.Filters.LinkAddingResultFilters;
 using BetfairMetadataService.DataAccess.Interfaces;
 using BetfairMetadataService.Domain.Internal;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,6 +10,7 @@ namespace BetfairMetadataService.API.Controllers
 {
     [Route("api/")]
     [ApiController]
+    [ResponseCache(CacheProfileName = "240SecondsCacheProfile")]
     public class InternalCompetitionsController : ControllerBase
     {
         private readonly IBatchReader<Competition> _batchReader;

@@ -10,6 +10,7 @@ namespace BetfairMetadataService.API.Controllers
 {
     [Route("api/")]
     [ApiController]
+    [ResponseCache(CacheProfileName = "240SecondsCacheProfile")]
     public class InternalMarketsController : ControllerBase
     {
         private readonly IBatchReader<Market> _batchReader;

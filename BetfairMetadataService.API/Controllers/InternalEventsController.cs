@@ -14,6 +14,7 @@ namespace BetfairMetadataService.API.Controllers
 {
     [Route("api/")]
     [ApiController]
+    [ResponseCache(CacheProfileName = "240SecondsCacheProfile")]
     public class InternalEventsController : ControllerBase
     {
         private readonly IBatchReader<Event> _batchReader;
